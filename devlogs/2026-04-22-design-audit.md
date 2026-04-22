@@ -31,31 +31,28 @@ The game-designer agent performed an exhaustive 15-area review of the GP1 "Cards
 ## Critical Gaps (must address before prototyping)
 
 ### 1. Per-shot card mechanics are undefined
-The 20 cards are passive modifiers. Many don't translate cleanly to per-shot:
-- "Steady Aim" (ADS spread = 0) — what does this mean for ONE bullet?
-- "Glass Cannon" (+100% dmg, -50% HP) — this is a state, not a shot
-- "Hot Streak" (consecutive kills +10% dmg) — this is a tracker, not a bullet
-- "Bullet Time" (kills slow time) — this is a triggered event, not a bullet modifier
+No specific cards have been designed yet. The core question is: when a card fires as a bullet, what categories of effects are possible?
 
-**Recommendation:** Redesign cards into three categories:
+**Recommendation:** Before designing specific cards, define the effect categories:
 - **Bullet cards** — modify THIS shot (fire, pierce, ricochet, homing). Always apply. No probability.
 - **Trigger cards** — fire a normal-ish bullet but trigger effect on hit/kill/miss (slow time, heal, reload)
 - **Instant cards** — fire no bullet, do something immediately (shield burst, dash, reload-and-draw)
+- **State cards** — some effects are persistent states, not per-shot. These may need a separate system (equipment/relic slots) rather than being in the magazine.
 
-### 2. No defensive/utility cards
-All 20 cards are offensive. No shield, no heal, no dodge, no block.
+### 2. Defensive/utility cards not yet considered
+Only offensive effects have been discussed. No shield, heal, dodge, or block concepts.
 - Creates no "offense vs defense" tension per shot
 - Player has no way to survive except killing faster
 
-**Recommendation:** Add 3-5 defensive cards: Shield Round, Heal Shot, Dodge Round, Decoy, Smoke Screen
+**Recommendation:** Consider defensive cards early — they fundamentally change what "firing a card" means.
 
-### 3. No curse/negative cards
-No dud rounds, no backfire, no jams.
+### 3. Curse/negative cards not yet considered
+No dud rounds, backfire, or jams discussed.
 - No risk in card acquisition
 - No deck pollution from enemies or events
 - Deck thinning has no urgency
 
-**Recommendation:** Add curse cards: Dud Round (does nothing), Jam (forces reload), Cursed Bullet (damages you)
+**Recommendation:** Consider curse cards as part of the system design — they add stakes to deck building.
 
 ### 4. No enemy design
 Zero enemy types defined. Cards exist to solve problems; enemies ARE the problems.
