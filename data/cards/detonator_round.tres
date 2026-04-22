@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Detonator Round"
+bullets_per_pack = 3
+damage_per_bullet = 8.0
+color = Color(0.7, 0.2, 1, 1)
+status_effect = 0
+status_stacks_per_hit = 0
+piercing = false
+consumes_poison = true
+poison_consume_multiplier = 3.0
+trail_color = Color(0.7, 0.2, 1, 1)
+muzzle_color = Color(0.7, 0.2, 1, 1)
