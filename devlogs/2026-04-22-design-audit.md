@@ -110,23 +110,19 @@ Not needed for Gate 1. Worth exploring for Gate 2+ as deck pollution / enemy int
 
 ## Remaining Questions for Gate 1
 
-### 1. What specific status types exist for stack-then-execute?
-Poison? Burn? Freeze? Bleed? How many stacks to cap? What does each finisher do with stacks? This defines the card design space.
-
-### 2. What are the specific DOOM-inspired enemy types for Gate 1?
-Need 2-3 types with different optimal combat distances. Names, HP, speed, damage, behavior. Must create situations where weapon switching matters.
-
-### 3. What 5 card types go in the Gate 1 prototype?
-Must include: basic bullet pack, at least 1 status-stacking card, at least 1 finisher/execute card, and 1-2 other types to demonstrate variety. Should show the stack-then-execute loop in action.
+### 1-3: RESOLVED
+- Q1 status types: Poison (stack+drain) + Burn (+20% amp). Defined.
+- Q2 enemies: Grunt (30 HP, medium), Big Eye (100 HP, long), Rusher (20 HP, close). Defined.
+- Q3 cards: Standard, Venom, Incendiary, Piercing, Detonator. Defined.
 
 ### 4. Does the player know how many bullets remain in the current card pack?
-Fading color intensity? Small counter? Nothing (surprise switch)? Affects how much the player can plan around pack transitions.
+**Default for Gate 1:** Show ammo counter for current pack (like normal FPS ammo count). Test if players use the info.
 
 ### 5. Can the player see the next card pack coming?
-Or is each transition a surprise? If they can see: they plan ahead. If not: they react. Both valid, different feel.
+**Default for Gate 1:** No. Transitions are surprises. Test if players care.
 
 ### 6. Weapon switching mid-combat — how does it interact with the magazine?
-Does switching weapons reload? Does the new weapon have its own magazine state? Or one shared magazine across all weapons?
+**Default for Gate 1:** One weapon only (Revolver). Skip weapon switching. Test card system in isolation.
 
 ---
 
