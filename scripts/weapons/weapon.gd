@@ -1,5 +1,5 @@
-## Weapon — Revolver state machine: idle → fire → reload
-## Handles raycast shooting, card-based damage, and piercing logic
+## Weapon — Revolver state machine per 3C document
+## Semi-auto fire (click per shot), ADS spread, reload locks, dry-fire feedback
 extends Node3D
 
 enum State { IDLE, FIRING, RELOADING }
@@ -7,6 +7,11 @@ enum State { IDLE, FIRING, RELOADING }
 @export var fire_rate: float = 2.0  # shots per second
 @export var reload_time: float = 2.0
 @export var max_ray_distance: float = 100.0
+
+@export_group("Spread")
+@export var base_spread: float = 0.0  # degrees, standing still
+@export var move_spread: float = 1.0  # degrees, while moving
+@export var ads_spread: float = 0.0   # degrees, while ADS (perfect accuracy)
 
 @onready var raycast: RayCast3D = $RayCast3D
 @onready var muzzle_point: Marker3D = $MuzzlePoint
@@ -16,6 +21,7 @@ enum State { IDLE, FIRING, RELOADING }
 var state: State = State.IDLE
 var deck_state: DeckState
 var can_fire: bool = true
+var _fired_this_click: bool = false  # Semi-auto: one shot per click
 
 # Card resources — loaded on ready
 var standard_round: CardData
@@ -25,6 +31,9 @@ var piercing_round: CardData
 var detonator_round: CardData
 
 var _prev_card: CardData = null
+
+# Player reference for ADS/movement queries
+var _player: Node3D = null
 
 
 func _ready() -> void:
@@ -56,6 +65,9 @@ func _ready() -> void:
 	raycast.target_position = Vector3(0, 0, -max_ray_distance)
 	raycast.collision_mask = 0b0101  # layers 1 (environment) + 3 (enemies)
 
+	# Find player
+	_player = get_parent().get_parent().get_parent()  # WeaponHolder -> Head -> Player
+
 	_emit_ammo_update()
 
 
@@ -75,8 +87,18 @@ func _process(_delta: float) -> void:
 		start_reload()
 		return
 
-	if Input.is_action_pressed("fire") and can_fire and state == State.IDLE:
-		fire()
+	# Semi-auto: fire on press only, not hold
+	if Input.is_action_just_pressed("fire"):
+		_fired_this_click = false
+
+	if Input.is_action_just_pressed("fire") and can_fire and state == State.IDLE:
+		if not _fired_this_click:
+			fire()
+			_fired_this_click = true
+	elif Input.is_action_just_pressed("fire") and (state == State.RELOADING or deck_state.is_magazine_empty()):
+		# Dry-fire click — tried to fire with no ammo or during reload
+		# TODO: Play dry-fire audio
+		pass
 
 	if Input.is_action_just_pressed("reload") and state != State.RELOADING:
 		start_reload()
@@ -91,6 +113,21 @@ func fire() -> void:
 	state = State.FIRING
 	can_fire = false
 	fire_timer.start()
+
+	# Calculate spread
+	var spread_degrees := _get_current_spread()
+	var spread_rad := deg_to_rad(spread_degrees)
+
+	# Apply spread to raycast direction
+	if spread_rad > 0:
+		var spread_offset := Vector3(
+			randf_range(-spread_rad, spread_rad),
+			randf_range(-spread_rad, spread_rad),
+			0
+		)
+		raycast.target_position = (Vector3(0, 0, -max_ray_distance) + spread_offset * max_ray_distance).normalized() * max_ray_distance
+	else:
+		raycast.target_position = Vector3(0, 0, -max_ray_distance)
 
 	# Raycast hit detection
 	raycast.force_raycast_update()
@@ -117,8 +154,15 @@ func fire() -> void:
 	_emit_ammo_update()
 
 
+func _get_current_spread() -> float:
+	if _player and _player.has_method("get_is_ads") and _player.get_is_ads():
+		return ads_spread
+	if _player and _player.has_method("get_is_moving") and _player.get_is_moving():
+		return move_spread
+	return base_spread
+
+
 func _pierce_check(from_point: Vector3, _normal: Vector3, card: CardData) -> void:
-	# Cast a second ray from the hit point, continuing forward
 	var space_state := get_world_3d().direct_space_state
 	var forward := -global_transform.basis.z
 	var query := PhysicsRayQueryParameters3D.create(
@@ -141,6 +185,10 @@ func start_reload() -> void:
 	EventBus.weapon_reload_started.emit()
 
 
+func is_reloading() -> bool:
+	return state == State.RELOADING
+
+
 func _on_fire_timer_timeout() -> void:
 	can_fire = true
 	state = State.IDLE
@@ -151,6 +199,7 @@ func _on_reload_finished() -> void:
 	state = State.IDLE
 	can_fire = true
 	_prev_card = null
+	_fired_this_click = false
 	EventBus.weapon_reload_finished.emit()
 	_emit_ammo_update()
 
