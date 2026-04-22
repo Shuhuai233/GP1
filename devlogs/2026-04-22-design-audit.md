@@ -1,180 +1,184 @@
-# Design Audit: 2026-04-22 — Game Designer Review
+# Design Audit v2: 2026-04-22 — Updated After Design Evolution
 
-## Audit Summary
+## What changed since Audit v1
 
-The game-designer agent performed an exhaustive 15-area review of the GP1 "Cards Are Bullets" design. Overall verdict: **The hook is excellent. The design is a promising skeleton that needs significant fleshing out before prototyping.**
+The design has evolved significantly through conversation. Key shifts:
 
----
-
-## Verdicts by Area
-
-| # | Area | Verdict |
-|---|---|---|
-| 1 | Core Loop | Needs Work — micro-loop defined, meso/macro loops missing |
-| 2 | Player Fantasy | Critical Gap — no identity, emotional arc, or mastery definition |
-| 3 | Onboarding | Needs Work — no plan for teaching "cards are bullets" |
-| 4 | Card System | Needs Work — 20 cards are still passive modifiers, not per-shot effects |
-| 5 | Weapon System | Strong — "weapon as lens" is brilliant, edge cases undefined |
-| 6 | Economy & Progression | Critical Gap — no economy, no meta-progression details |
-| 7 | Extraction Mechanic | Critical Gap — concept only, zero implementation details |
-| 8 | Enemy Design | Critical Gap — completely absent |
-| 9 | Level/Room Design | Critical Gap — completely absent |
-| 10 | Difficulty & Balance | Needs Work — no scaling, no anti-exploit, starter deck is 100% basic |
-| 11 | UX & Feel | Needs Work — no HUD, no feedback design, no reload feel |
-| 12 | Narrative & World | Needs Work — acceptable for prototype, needs direction for v0.5 |
-| 13 | Monetization & Scope | Needs Work — 100+ cards ambitious, Early Access recommended |
-| 14 | Competitive Differentiation | Strong — "per-shot card effects in FPS" claim holds up |
-| 15 | Risks & Failure Modes | Needs Work — 5 additional risks identified |
+1. **Card = bullet pack** (not 1:1). Each card provides X bullets all carrying the same effect. Solves the pacing vs readability tension.
+2. **Fast pacing preserved.** SMG, rifle, shotgun all fire at real FPS speeds. Cards cycle every ~2 seconds regardless of weapon fire rate.
+3. **Diegetic visibility decided.** Screen-wide color language (muzzle flash, trails, crosshair tint, hit effects) communicates current card mode. No HUD reading during combat.
+4. **Cognitive science timing.** ~1.5-2.5 sec per card pack is backed by human visual processing data (color ID ~150ms, aim adjustment ~500ms, tactical choice ~1-2 sec).
+5. **No specific cards designed yet.** The 20 speculative cards from earlier brainstorming have been removed. Card archetypes, specific effects, and synergies are all TBD.
+6. **4 weapons defined:** Revolver (6 cards, ~2/sec), Rifle (6 cards, ~5/sec), SMG (6 cards, ~8/sec), Shotgun (4 cards, ~1.5/sec).
 
 ---
 
-## Critical Gaps (must address before prototyping)
+## Updated Verdicts by Area
 
-### 1. Per-shot card mechanics are undefined
-No specific cards have been designed yet. The core question is: when a card fires as a bullet, what categories of effects are possible?
-
-**Recommendation:** Before designing specific cards, define the effect categories:
-- **Bullet cards** — modify THIS shot (fire, pierce, ricochet, homing). Always apply. No probability.
-- **Trigger cards** — fire a normal-ish bullet but trigger effect on hit/kill/miss (slow time, heal, reload)
-- **Instant cards** — fire no bullet, do something immediately (shield burst, dash, reload-and-draw)
-- **State cards** — some effects are persistent states, not per-shot. These may need a separate system (equipment/relic slots) rather than being in the magazine.
-
-### 2. Defensive/utility cards not yet considered
-Only offensive effects have been discussed. No shield, heal, dodge, or block concepts.
-- Creates no "offense vs defense" tension per shot
-- Player has no way to survive except killing faster
-
-**Recommendation:** Consider defensive cards early — they fundamentally change what "firing a card" means.
-
-### 3. Curse/negative cards not yet considered
-No dud rounds, backfire, or jams discussed.
-- No risk in card acquisition
-- No deck pollution from enemies or events
-- Deck thinning has no urgency
-
-**Recommendation:** Consider curse cards as part of the system design — they add stakes to deck building.
-
-### 4. No enemy design
-Zero enemy types defined. Cards exist to solve problems; enemies ARE the problems.
-
-**Recommendation:** Define 5 types minimum:
-1. Fodder — low HP, groups (tests AoE/spread)
-2. Tank — high HP, slow (tests sustained DPS, burn/poison)
-3. Rusher — fast, closes distance (tests defensive cards, movement)
-4. Sniper — ranged, fragile (tests precision, movement)
-5. Shielder — front shield (tests pierce/ricochet)
-
-Plus 1 card-interactive enemy: "Jammer" that inserts dud rounds into your magazine.
-
-### 5. No run structure
-No room count, room types, map structure, or session flow defined.
-
-**Recommendation:** For v0.5 target StS-style branching map:
-- 8-12 nodes per run
-- Types: Combat (60%), Elite (15%), Shop (10%), Event (10%), Boss (5%)
-- Run length target: 15-20 minutes
-
-### 6. No economy or meta-progression
-What's the in-run currency? What do shops sell? What persists after extraction? What prevents snowball?
-
-**Recommendation:** Extraction should UNLOCK cards in permanent collection, not let you START with them. Every run starts from scratch with expanded card pool. This is the StS model and it solves snowball.
-
-### 7. No extraction details
-When? How? What do you keep? What's the cost of extracting early?
-
-**Recommendation:** Portals at fixed intervals (every 3 rooms). Reward scales with depth: room 3 = keep 1 card (unlock), room 6 = keep 3, room 9 = keep entire deck. Extraction ends the run.
+| # | Area | Previous | Current | What changed |
+|---|---|---|---|---|
+| 1 | Core Loop | Needs Work | Needs Work | Card-pack model clarifies micro-loop. Meso/macro loops still missing. |
+| 2 | Player Fantasy | Critical Gap | Critical Gap | No change — still undefined. |
+| 3 | Onboarding | Needs Work | Improved | Color language + card packs make the system more self-teaching. Still needs explicit plan. |
+| 4 | Card System | Needs Work | Needs Work | Card-pack model is a major structural advance. But zero specific cards exist. Effect categories undefined. |
+| 5 | Weapon System | Strong | Strong | Card-pack model strengthens this — all 4 weapons now have clear identities at consistent ~2 sec card pace. |
+| 6 | Economy & Progression | Critical Gap | Critical Gap | No change. |
+| 7 | Extraction Mechanic | Critical Gap | Critical Gap | No change. |
+| 8 | Enemy Design | Critical Gap | Critical Gap | No change. |
+| 9 | Level/Room Design | Critical Gap | Critical Gap | No change. |
+| 10 | Difficulty & Balance | Needs Work | Needs Work | No change. |
+| 11 | UX & Feel | Needs Work | Improved | Q7 answered: diegetic color language, no HUD reading during combat. Major progress. |
+| 12 | Narrative & World | Needs Work | Needs Work | No change. |
+| 13 | Monetization & Scope | Needs Work | Needs Work | No change. |
+| 14 | Competitive Differentiation | Strong | Stronger | Card-pack model + fast pacing is even more differentiated. Nobody has this. |
+| 15 | Risks & Failure Modes | Needs Work | Partially Addressed | Biggest risk (imperceptible cards at FPS speed) is directly mitigated by card-pack model + color language. |
 
 ---
 
-## Additional Risks Identified
+## What's been resolved since v1
 
-| # | Risk | Severity |
-|---|---|---|
-| 8 | Card effects too subtle — player doesn't notice the system | Critical |
-| 9 | Base FPS not fun on its own — cards can't save bad shooting | High |
-| 10 | Extraction always-correct or never-correct if reward isn't tuned | High |
-| 11 | Combinatorial explosion — 100 cards × 3 weapons = 30,000 interaction pairs | Medium |
-| 12 | Solo dev burnout on a 8-16 month complex system | Medium |
+### RESOLVED: "Per-shot card system imperceptible at FPS speed"
+This was the #1 risk. Card-pack model means cards don't cycle per bullet — they cycle every ~2 seconds. Player has time to notice, react, and play around each card mode. Color language makes identification ambient, not reading-dependent.
+
+**New Gate 1 test:** Can the player tell which card MODE they're in from the visual language alone (no HUD reading)? This is a much more answerable question than "can they track individual bullets."
+
+### RESOLVED: "SMG/fast weapons break the card system"
+Card packs normalize card duration across all fire rates. SMG fires 15-20 bullets per card pack, revolver fires 3-5, but both spend ~2 seconds per card.
+
+### RESOLVED: "HUD information overload"
+Diegetic color language replaces HUD icons. During combat: muzzle flash color + bullet trails + hit effects + crosshair tint. HUD card icon is backup only. Player SEES information through the world, never READS it.
 
 ---
 
-## Top 10 Questions Before Gate 1 Prototype
+## What's still unresolved (remaining gaps)
 
-### 1. What does the player perceive and decide at each trigger pull?
-If shuffle is random and player just shoots — there's no "micro-strategy moment." Define: can they see the current card? Can they skip/cycle? Is the decision "when to shoot" or "whether to shoot THIS card at THIS target"?
+### Critical Gaps — must address before prototyping
 
-### 2. How do the 20 cards translate to per-shot effects — concretely, card by card?
-Take the hardest cases (Steady Aim, Glass Cannon, Hot Streak, Bullet Time). Write exact per-shot versions. If they can't translate, they become a different system element (equipment/relic) or get cut.
+**1. Card effect categories undefined.**
+What TYPES of effects can cards have? The card-pack model answers HOW cards deliver effects (X bullets per pack), but not WHAT those effects are.
 
-### 3. What happens when a card fires but misses?
-Consumed and wasted? Returns to deck? Triggers at impact point regardless? This determines skill floor, punishment for bad aim, and emotional weight of every shot.
+Proposed categories (from v1 audit, still valid):
+- **Bullet cards** — modify the bullets in this pack (fire, poison, pierce, ricochet, homing)
+- **Trigger cards** — bullets are normal-ish but trigger effect on hit/kill (heal on kill, slow on hit, explode on death)
+- **Instant cards** — no bullets fired, immediate effect (shield burst, dash, area pulse). Do these even make sense in the card-pack model? If a card = X bullets, what's an "instant" pack?
+- **State cards** — may not belong in the magazine at all. Persistent buffs might need a separate system (relics/equipment).
 
-### 4. What is the complete run structure?
-Menu → Loadout → Room 1 → Reward → Room 2 → ... → Extract/Die. Every transition defined. Room count, types, pacing.
+**New question from card-pack model:** If an "instant" card is a pack, what does it mean? Does it fire 1 "bullet" that's actually a shield? Or does the pack concept not apply to non-bullet effects? This needs resolution.
 
-### 5. How does the starter deck solve "80% basics"?
-Revolver (6 mag) with 6 basics = 100% mundane first room. **Start with 4 basics + 2 non-basics** so one-third of shots are interesting immediately.
+**2. No enemy design.** (unchanged)
+Zero enemy types. Cards solve problems; enemies ARE the problems. Can't evaluate card design without enemies to use cards against.
 
-### 6. What visual/audio feedback distinguishes card shots from basic shots?
-If player can't TELL a fire bullet just fired without the HUD, the system doesn't exist. Define: muzzle flash color, bullet trail, hit effect, sound cue per card type.
+**3. No run structure.** (unchanged)
+No session flow, room count, room types, or map structure.
 
-### 7. What are the 2-3 enemy types for Gate 1?
-Minimum: Fodder (groups, tests AoE), Tank (tests sustained damage), Rusher (tests reactive/defensive play).
+**4. No economy or meta-progression.** (unchanged)
+No in-run currency, no shop design, no extraction reward details, no snowball prevention.
 
-### 8. What does reload/reshuffle feel like?
-What makes it strategic? Can player see what they'll get? Cost of reloading early? If it's just "press R, wait, cards randomize" — it's not a strategic beat.
+**5. No extraction details.** (unchanged)
+Concept only. When, how, what you keep, cost of extracting early — all undefined.
+
+**6. Defensive/utility cards not yet considered.** (unchanged)
+All discussion has been about offensive effects. No shield, heal, dodge concepts. In the card-pack model: what does a "defensive pack" feel like? You pull the trigger and instead of bullets, you get a shield for X seconds?
+
+**7. Curse/negative cards not yet considered.** (unchanged)
+No dud rounds, jams, or deck pollution. In the card-pack model: a curse pack means X bullets of NOTHING (or harmful). That could feel very punishing — you're stuck in "dud mode" for 2 seconds. Might be too harsh or might create great tension.
+
+---
+
+## Updated Risk Table
+
+| # | Risk | Severity | Status |
+|---|---|---|---|
+| 1 | Card effects imperceptible at FPS speed | Was Critical | **Mitigated** by card-pack model + color language. Still needs prototype validation. |
+| 2 | "Every shot feels the same" (80% basics) | High | Open — starter deck composition still undefined |
+| 3 | Card-enemy balancing | High | Open — no enemies designed |
+| 4 | UI information overload | Was High | **Mitigated** by diegetic color language decision |
+| 5 | Content volume (200-300 cards) | Medium | Open — card-pack model may reduce needed variety (fewer card types needed since each lasts longer) |
+| 6 | Balatro shadow | Medium | Open |
+| 7 | Bad RNG frustration | Medium | Open — card-pack model may worsen this (stuck in bad-card mode for 2 sec vs 1 bullet) |
+| 8 | Card effects too subtle | High | **Partially mitigated** by screen-wide color language. Prototype must validate. |
+| 9 | Base FPS not fun on its own | High | Open — no FPS code exists yet |
+| 10 | Extraction always/never correct | High | Open — no extraction details |
+| 11 | Combinatorial explosion | Medium | Open |
+| 12 | Solo dev burnout | Medium | Open |
+| 13 | **NEW: Instant/defensive cards don't fit card-pack model** | Medium | The card-pack model assumes "X bullets per card." Non-bullet effects (shield, heal, dash) need a coherent answer for how they work as "packs." |
+| 14 | **NEW: Curse packs too punishing** | Medium | Being stuck in "dud mode" for ~2 seconds during fast combat could feel terrible. Needs careful tuning or mitigation (shorter curse packs? manual skip at a cost?). |
+
+---
+
+## Updated Top 10 Questions Before Gate 1
+
+### 1. What card effect categories exist, and how does each work as a "pack"?
+Bullet packs (X fire bullets) are clear. What about trigger packs, instant packs, defensive packs? Define each category's pack behavior.
+
+### 2. What happens when the player fires a card pack but misses most bullets?
+Is the pack consumed regardless? Does accuracy matter? If a fire pack has 10 bullets and you miss 8, did you "waste" the card? This determines skill expression.
+
+### 3. What is the complete run structure?
+Menu → Loadout → Room 1 → Reward → Room 2 → ... → Extract/Die. Every transition. Room count, types, pacing.
+
+### 4. How does the starter deck avoid "100% basic" first room?
+With 6 card slots per magazine, starting with 4 basic + 2 non-basic means one-third of card packs are interesting from minute one.
+
+### 5. What are the 2-3 enemy types for Gate 1?
+Minimum: Fodder (groups, tests AoE packs), Tank (tests sustained DPS packs), Rusher (tests defensive play).
+
+### 6. Can the player see how many bullets remain in the current card pack?
+Options: a fading color intensity, a small counter, nothing (surprise switch). This affects how much the player can plan "I have 5 more fire bullets, enough to kill this enemy before it switches."
+
+### 7. Can card packs have different bullet counts?
+Fire = 5 bullets (strong per-bullet), Poison = 15 bullets (weak per-bullet, but lasts longer). Variable pack sizes add another tuning dimension but increase complexity.
+
+### 8. What happens on reload mid-card-pack?
+Player reloads with 7 bullets left in a 10-bullet fire pack. Are those 7 bullets wasted? Does the fire card go back into the deck? Or does it resume after reshuffle?
 
 ### 9. What persists after extraction vs death?
-Even for Gate 1, stakes must be understood. Define the rules now even if not fully implemented.
+Even for Gate 1, stakes need to be understood. Define rules now even if not fully implemented.
 
-### 10. What are the specific 5 cards for Gate 1, and why those 5?
-Suggested: Basic Bullet + Ignite Rounds + Ricochet + Pierce + Shield Burst. Covers 4 effect types, Ignite + Ricochet creates emergent combo, Shield Burst tests defensive cards.
-
----
-
-## The Single Biggest Risk
-
-**The per-shot card system is imperceptible during real-time FPS gameplay.**
-
-The game rests on one bet: that a player at FPS speed can perceive, understand, and react to individual card effects. If the game is too fast for this — if effects blur into "random stuff happening" — the hook is dead.
-
-This is a cognitive bandwidth problem. Card games work because they're turn-based (unlimited think time). FPS games work because they're reflex-based. GP1 asks the player to do both simultaneously. That might not be possible at FPS speed.
-
-**Gate 1 MUST answer this:** can the player identify which card just fired without looking at the HUD?
+### 10. What are the specific 5 card types for Gate 1 prototype?
+Must include: at least 1 basic, at least 2 visually distinct offensive types, ideally 1 non-offensive card to test whether non-bullet packs work.
 
 ---
 
-## The Single Biggest Strength
+## The Single Biggest Risk (updated)
 
-**"Your deck is your magazine" is genuinely novel, instantly communicable, and trailer-ready.**
+**"Instant" and defensive cards may not fit the card-pack model.**
 
-It fuses FPS and deckbuilder at the verb level, not the menu level. Reloading is reshuffling. Magazine size is hand size. Weapon choice is deck archetype. Every concept maps cleanly.
+The card-pack model elegantly solves offensive cards: fire pack = 10 fire bullets. But what about:
+- A heal card? Is it a "pack" of 10 heal bullets you shoot at yourself?
+- A shield card? You pull the trigger and get a shield for... 10 shots?
+- A dash card? You fire and dash 10 times?
 
-This is a hook that sells in a single GIF: six shots, each visually distinct, then reload shows six new card icons. A viewer understands in 3 seconds. A streamer explains in one sentence.
+These don't make sense as "packs of bullets." If the game is ALL offensive bullet packs, it might work but limits strategic depth (no offense/defense tension). If non-bullet cards exist, they need a different mechanic that still fits the magazine/reload framework.
 
-**Protect this above all else.**
-
----
-
-## Recommended Next Steps (before any code)
-
-### Step 1: Paper prototype
-6 index cards (4 basic, 2 special). Shuffle face-down. Flip one at a time. For each: shoot at Tank (50 HP) or Rusher (15 HP, closing)? Or hold fire and reload to reshuffle? Play 3 rounds. Do decisions feel meaningful?
-
-### Step 2: Greybox feedback test
-Firing range, no enemies. Load 5 cards. Fire each. Can you TELL which card fired from visuals/sound alone without the HUD?
-
-### Step 3: Cognitive load test
-Simplest combat room. After clearing: can you remember which cards fired? Did you ever WANT a specific card? If the player can't remember individual card moments, the system is too fast and needs to slow down or simplify.
+This is the design's current frontier — the card-pack model works beautifully for offense but hasn't been stress-tested against the full design space.
 
 ---
 
-## Gate 0.5 — "Do I know what I'm building?"
-The audit identifies a missing gate between Gate 0 ("Do I still want this?") and Gate 1 ("One card that feels good").
+## The Single Biggest Strength (updated)
 
-**Gate 0.5 pass criteria:**
-- All 10 questions above have written answers
-- 5 prototype cards redesigned as per-shot effects (not passive modifiers)
-- 3 enemy types defined with HP, behavior, and card-system interaction
-- Run structure flowchart complete
-- Paper prototype played at least once
+**The card-pack model + diegetic color language is an elegant solution to FPS-deckbuilder's hardest problem.**
+
+Every prior attempt at real-time card combat has struggled with: "how does the player perceive card effects during fast action?" GP1's answer — cards are modes lasting ~2 seconds, communicated through screen-wide color shifts — is simple, intuitive, and trailer-ready.
+
+A GIF of gameplay would show: player spraying orange-tinted fire bullets → color shifts to green → poison bullets with green trails → color shifts to blue → shield burst → reload shuffle → new color sequence begins. A viewer understands the system in 5 seconds without any explanation.
+
+**This is stronger than the v1 hook.** "Your deck is your magazine" was a pitch. "Your gun cycles through color-coded card modes" is a visible, demonstrable mechanic.
+
+---
+
+## Recommended Next Steps
+
+### Before any code (Gate 0.5):
+1. Define card effect categories and how each works as a pack
+2. Define 3 enemy types for prototype
+3. Define run structure flowchart
+4. Answer: what do non-bullet cards (heal, shield, dash) look like as packs?
+5. Pick 5 specific card types for Gate 1
+
+### Gate 1 prototype test:
+- Primary question: **Can the player tell which card mode they're in from visual language alone?**
+- Secondary question: **Does the ~2 sec card-pack pace feel right?**
+- Tertiary question: **Does the player ever WANT a specific card mode and play around it?**
+
+If all three are "yes" → the core works. Proceed to Gate 2.
