@@ -54,34 +54,36 @@ Diegetic color language replaces HUD icons. During combat: muzzle flash color + 
 
 ### Critical Gaps — must address before prototyping
 
-**1. Card effect categories undefined.**
-What TYPES of effects can cards have? The card-pack model answers HOW cards deliver effects (X bullets per pack), but not WHAT those effects are.
+**1. Card effect categories — PARTIALLY RESOLVED.**
+Direction decided: stack-then-execute (叠层后斩杀) is the core design philosophy. Cards apply status stacks, then finisher cards consume stacks for burst damage. Bullet-type and trigger-type cards fit the pack model cleanly. Non-bullet effects (heal, shield, dash) will be a SEPARATE perk/relic system outside the magazine — confirmed they don't fit as card packs.
 
-Proposed categories (from v1 audit, still valid):
-- **Bullet cards** — modify the bullets in this pack (fire, poison, pierce, ricochet, homing)
-- **Trigger cards** — bullets are normal-ish but trigger effect on hit/kill (heal on kill, slow on hit, explode on death)
-- **Instant cards** — no bullets fired, immediate effect (shield burst, dash, area pulse). Do these even make sense in the card-pack model? If a card = X bullets, what's an "instant" pack?
-- **State cards** — may not belong in the magazine at all. Persistent buffs might need a separate system (relics/equipment).
+Remaining work: design specific cards around stack-then-execute. Define what status types exist (poison, burn, freeze, etc.) and what finisher cards do with those stacks.
 
-**New question from card-pack model:** If an "instant" card is a pack, what does it mean? Does it fire 1 "bullet" that's actually a shield? Or does the pack concept not apply to non-bullet effects? This needs resolution.
+**2. Enemy design — DIRECTION SET.**
+DOOM-inspired archetypes with different optimal combat distances to force weapon switching. Specific enemy types, stats, and behaviors still TBD. Need to define for Gate 1 prototype.
 
-**2. No enemy design.** (unchanged)
-Zero enemy types. Cards solve problems; enemies ARE the problems. Can't evaluate card design without enemies to use cards against.
+**3. Run structure — DEFERRED (acceptable for Gate 1).**
+Gate 1 = single arena room with covers + verticality, 3 waves. Full run structure needed for Gate 2.
 
-**3. No run structure.** (unchanged)
-No session flow, room count, room types, or map structure.
+**4. Economy & meta-progression — DEFERRED.**
+Not needed for Gate 1. Needed for v0.5.
 
-**4. No economy or meta-progression.** (unchanged)
-No in-run currency, no shop design, no extraction reward details, no snowball prevention.
+**5. Extraction details — DEFERRED.**
+Not needed for Gate 1. Needed for v0.5.
 
-**5. No extraction details.** (unchanged)
-Concept only. When, how, what you keep, cost of extracting early — all undefined.
+**6. Defensive/utility cards — RESOLVED.**
+Non-bullet effects (heal, shield, dash) live outside the magazine as a perk/relic system. The magazine is for offensive card packs only. This cleanly resolves the "defensive packs don't make sense" problem.
 
-**6. Defensive/utility cards not yet considered.** (unchanged)
-All discussion has been about offensive effects. No shield, heal, dodge concepts. In the card-pack model: what does a "defensive pack" feel like? You pull the trigger and instead of bullets, you get a shield for X seconds?
+**7. Curse/negative cards — DEFERRED.**
+Not needed for Gate 1. Worth exploring for Gate 2+ as deck pollution / enemy interactions.
 
-**7. Curse/negative cards not yet considered.** (unchanged)
-No dud rounds, jams, or deck pollution. In the card-pack model: a curse pack means X bullets of NOTHING (or harmful). That could feel very punishing — you're stuck in "dud mode" for 2 seconds. Might be too harsh or might create great tension.
+### Additional decisions that resolve prior gaps
+
+**P7 — Miss penalty:** Card pack consumed on fire regardless of accuracy. Default rule, tune later.
+
+**P8 — Reload mid-pack:** Remaining bullets wasted, deck reshuffles. Reload is now a real cost/decision.
+
+**P9 — Variable bullet counts:** Confirmed. Strong cards = fewer bullets per pack, weak cards = more. Adds tuning dimension.
 
 ---
 
@@ -89,69 +91,55 @@ No dud rounds, jams, or deck pollution. In the card-pack model: a curse pack mea
 
 | # | Risk | Severity | Status |
 |---|---|---|---|
-| 1 | Card effects imperceptible at FPS speed | Was Critical | **Mitigated** by card-pack model + color language. Still needs prototype validation. |
-| 2 | "Every shot feels the same" (80% basics) | High | Open — starter deck composition still undefined |
-| 3 | Card-enemy balancing | High | Open — no enemies designed |
-| 4 | UI information overload | Was High | **Mitigated** by diegetic color language decision |
-| 5 | Content volume (200-300 cards) | Medium | Open — card-pack model may reduce needed variety (fewer card types needed since each lasts longer) |
-| 6 | Balatro shadow | Medium | Open |
-| 7 | Bad RNG frustration | Medium | Open — card-pack model may worsen this (stuck in bad-card mode for 2 sec vs 1 bullet) |
+| 1 | Card effects imperceptible at FPS speed | Was Critical | **Resolved** by card-pack model + color language. Validate in prototype. |
+| 2 | "Every shot feels the same" (80% basics) | Was High | **Mitigated** by 70/30 starter split. Validate in prototype. |
+| 3 | Card-enemy balancing | High | **Direction set** — DOOM archetypes with range differentiation. Specifics TBD. |
+| 4 | UI information overload | Was High | **Resolved** by diegetic color language. |
+| 5 | Content volume | Medium | Open — stack-then-execute may reduce needed card count (fewer unique cards, deeper interactions). |
+| 6 | Balatro shadow | Medium | Open. |
+| 7 | Bad RNG frustration | Medium | **Partially mitigated** — reload-mid-pack-waste creates agency (choose when to reshuffle). |
 | 8 | Card effects too subtle | High | **Partially mitigated** by screen-wide color language. Prototype must validate. |
-| 9 | Base FPS not fun on its own | High | Open — no FPS code exists yet |
-| 10 | Extraction always/never correct | High | Open — no extraction details |
-| 11 | Combinatorial explosion | Medium | Open |
-| 12 | Solo dev burnout | Medium | Open |
-| 13 | **NEW: Instant/defensive cards don't fit card-pack model** | Medium | The card-pack model assumes "X bullets per card." Non-bullet effects (shield, heal, dash) need a coherent answer for how they work as "packs." |
-| 14 | **NEW: Curse packs too punishing** | Medium | Being stuck in "dud mode" for ~2 seconds during fast combat could feel terrible. Needs careful tuning or mitigation (shorter curse packs? manual skip at a cost?). |
+| 9 | Base FPS not fun on its own | High | Open — no FPS code yet. |
+| 10 | Extraction always/never correct | High | Deferred — not needed for Gate 1. |
+| 11 | Combinatorial explosion | Medium | Open. |
+| 12 | Solo dev burnout | Medium | Open. |
+| 13 | Non-bullet cards don't fit pack model | Was Medium | **Resolved** — heal/shield/dash moved to separate perk/relic system. Magazine is offensive only. |
+| 14 | Curse packs too punishing | Medium | Deferred — not in Gate 1. |
 
 ---
 
-## Updated Top 10 Questions Before Gate 1
+## Remaining Questions for Gate 1
 
-### 1. What card effect categories exist, and how does each work as a "pack"?
-Bullet packs (X fire bullets) are clear. What about trigger packs, instant packs, defensive packs? Define each category's pack behavior.
+### 1. What specific status types exist for stack-then-execute?
+Poison? Burn? Freeze? Bleed? How many stacks to cap? What does each finisher do with stacks? This defines the card design space.
 
-### 2. What happens when the player fires a card pack but misses most bullets?
-Is the pack consumed regardless? Does accuracy matter? If a fire pack has 10 bullets and you miss 8, did you "waste" the card? This determines skill expression.
+### 2. What are the specific DOOM-inspired enemy types for Gate 1?
+Need 2-3 types with different optimal combat distances. Names, HP, speed, damage, behavior. Must create situations where weapon switching matters.
 
-### 3. What is the complete run structure?
-Menu → Loadout → Room 1 → Reward → Room 2 → ... → Extract/Die. Every transition. Room count, types, pacing.
+### 3. What 5 card types go in the Gate 1 prototype?
+Must include: basic bullet pack, at least 1 status-stacking card, at least 1 finisher/execute card, and 1-2 other types to demonstrate variety. Should show the stack-then-execute loop in action.
 
-### 4. How does the starter deck avoid "100% basic" first room?
-With 6 card slots per magazine, starting with 4 basic + 2 non-basic means one-third of card packs are interesting from minute one.
+### 4. Does the player know how many bullets remain in the current card pack?
+Fading color intensity? Small counter? Nothing (surprise switch)? Affects how much the player can plan around pack transitions.
 
-### 5. What are the 2-3 enemy types for Gate 1?
-Minimum: Fodder (groups, tests AoE packs), Tank (tests sustained DPS packs), Rusher (tests defensive play).
+### 5. Can the player see the next card pack coming?
+Or is each transition a surprise? If they can see: they plan ahead. If not: they react. Both valid, different feel.
 
-### 6. Can the player see how many bullets remain in the current card pack?
-Options: a fading color intensity, a small counter, nothing (surprise switch). This affects how much the player can plan "I have 5 more fire bullets, enough to kill this enemy before it switches."
-
-### 7. Can card packs have different bullet counts?
-Fire = 5 bullets (strong per-bullet), Poison = 15 bullets (weak per-bullet, but lasts longer). Variable pack sizes add another tuning dimension but increase complexity.
-
-### 8. What happens on reload mid-card-pack?
-Player reloads with 7 bullets left in a 10-bullet fire pack. Are those 7 bullets wasted? Does the fire card go back into the deck? Or does it resume after reshuffle?
-
-### 9. What persists after extraction vs death?
-Even for Gate 1, stakes need to be understood. Define rules now even if not fully implemented.
-
-### 10. What are the specific 5 card types for Gate 1 prototype?
-Must include: at least 1 basic, at least 2 visually distinct offensive types, ideally 1 non-offensive card to test whether non-bullet packs work.
+### 6. Weapon switching mid-combat — how does it interact with the magazine?
+Does switching weapons reload? Does the new weapon have its own magazine state? Or one shared magazine across all weapons?
 
 ---
 
-## The Single Biggest Risk (updated)
+## The Single Biggest Risk (updated v2.1)
 
-**"Instant" and defensive cards may not fit the card-pack model.**
+**Stack-then-execute doesn't feel satisfying at FPS speed.**
 
-The card-pack model elegantly solves offensive cards: fire pack = 10 fire bullets. But what about:
-- A heal card? Is it a "pack" of 10 heal bullets you shoot at yourself?
-- A shield card? You pull the trigger and get a shield for... 10 shots?
-- A dash card? You fire and dash 10 times?
+The design bets on: player applies status stacks with sustained fire → recognizes stacks are high → switches to finisher card → detonates for big burst. This requires the player to:
+1. Track stack count on the enemy (visual feedback needed)
+2. Know when a finisher card is coming up in the magazine
+3. Time the execution
 
-These don't make sense as "packs of bullets." If the game is ALL offensive bullet packs, it might work but limits strategic depth (no offense/defense tension). If non-bullet cards exist, they need a different mechanic that still fits the magazine/reload framework.
-
-This is the design's current frontier — the card-pack model works beautifully for offense but hasn't been stress-tested against the full design space.
+If any of these are too hard to perceive or too slow to react to, the signature mechanic won't land. Gate 1 must test this loop specifically.
 
 ---
 
@@ -169,16 +157,17 @@ A GIF of gameplay would show: player spraying orange-tinted fire bullets → col
 
 ## Recommended Next Steps
 
-### Before any code (Gate 0.5):
-1. Define card effect categories and how each works as a pack
-2. Define 3 enemy types for prototype
-3. Define run structure flowchart
-4. Answer: what do non-bullet cards (heal, shield, dash) look like as packs?
-5. Pick 5 specific card types for Gate 1
+### Immediate (Gate 0.5 → Gate 1):
+1. Define 2-3 status types (e.g., poison, burn) and their stack mechanics
+2. Design 1 finisher/execute card that consumes stacks
+3. Define 2-3 DOOM-inspired enemy types with combat distance differences
+4. Pick 5 card types for Gate 1 (basic + 2 stackers + 1 finisher + 1 other)
+5. Build Gate 1: arena with covers, 3 waves, card selection between waves
 
-### Gate 1 prototype test:
-- Primary question: **Can the player tell which card mode they're in from visual language alone?**
-- Secondary question: **Does the ~2 sec card-pack pace feel right?**
-- Tertiary question: **Does the player ever WANT a specific card mode and play around it?**
+### Gate 1 prototype test (updated):
+- Primary: **Can the player perceive card mode switches through color language alone?**
+- Secondary: **Does the ~2 sec card-pack pace feel right?**
+- Tertiary: **Does stack-then-execute produce a satisfying "burst" moment?**
+- Bonus: **Does reload-as-sacrifice feel like a real decision?**
 
-If all three are "yes" → the core works. Proceed to Gate 2.
+If all four are "yes" → the core works. Proceed to Gate 2.
