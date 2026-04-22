@@ -1,0 +1,253 @@
+# GP1 — 3C Document (Character, Camera, Controls)
+
+*Gate 1 prototype specification. All values are starting points — tune through playtesting.*
+
+---
+
+## Design Intent
+
+GP1 is a first-person shooter where the player must be able to:
+1. **Move fluidly** — smooth, responsive, satisfying moment-to-moment
+2. **Aim precisely** — revolver rewards accuracy (Detonator has 3 bullets, can't waste them)
+3. **Read card modes** — crosshair and screen center must be visually clear enough to notice color shifts
+4. **Make spatial decisions** — use cover, manage distance to enemies at different ranges (5m-30m)
+
+The 3C should feel **responsive and modern** — closer to DOOM Eternal / Hades pace than Tarkov / ARMA. The player is active, not camping.
+
+---
+
+## 1. CHARACTER
+
+### Player body
+- First-person only (no third-person)
+- No visible player model for Gate 1 (arms + weapon only)
+- Capsule collider: height 1.8m, radius 0.3m
+- Eye height: 1.6m from ground
+
+### Health
+- HP: 100
+- No passive regeneration for Gate 1
+- No armor / shield system for Gate 1
+- Death = run over (restart from wave 1)
+
+### Damage feedback
+- Screen edge red flash on hit (intensity scales with damage)
+- Camera flinch: small random pitch kick on taking damage (2-4 degrees, recovers in 0.15s)
+- Audio: impact grunt
+- Low HP warning: heartbeat sound below 30 HP, subtle red vignette
+
+---
+
+## 2. CAMERA
+
+### Base settings
+- FOV: 90 degrees (standard FPS, wide enough for spatial awareness)
+- Near clip: 0.05m
+- Far clip: 100m
+- No head bob for Gate 1 (clean read on crosshair color is priority)
+
+### Mouse look
+- Sensitivity: configurable (default ~0.002 rad/pixel, typical for 800 DPI)
+- No mouse acceleration
+- No mouse smoothing
+- Vertical look: clamped to ±85 degrees (can't look straight up/down)
+- Horizontal: unclamped (full 360)
+
+### Camera effects (subtle — must not interfere with card color reading)
+- **Recoil kick:** 1-2 degree upward pitch per shot, recovers over 0.2s. Revolver at 2/sec means the camera has a gentle rhythmic bounce.
+- **Landing impact:** small downward pitch (3-5 degrees) on landing from height, recovers in 0.2s
+- **Sprint tilt:** very subtle forward lean (1-2 degrees pitch down) while sprinting. Returns on stop.
+- **NO screen shake for Gate 1.** Screen shake competes with card color readability. Add later if needed.
+- **NO chromatic aberration, NO motion blur.** These smear the color language.
+
+### Critical constraint
+The crosshair area must remain visually clean at all times. Card color tinting is communicated through the crosshair. Any camera effect that obscures, smears, or distracts from the screen center works AGAINST the core mechanic.
+
+---
+
+## 3. CONTROLS
+
+### Movement
+
+| Action | Key | Behavior |
+|---|---|---|
+| Walk forward | W | Constant speed |
+| Walk backward | S | Constant speed (same as forward) |
+| Strafe left | A | Constant speed |
+| Strafe right | D | Constant speed |
+| Sprint | Shift (hold) | Increased speed, forward only |
+| Jump | Space | Instant impulse upward |
+| Crouch | Ctrl (toggle) | Reduce height, slower move speed |
+
+**Movement values:**
+
+| Stat | Value | Notes |
+|---|---|---|
+| Walk speed | 5 m/s | Standard FPS pace |
+| Sprint speed | 8 m/s | 60% faster, forward-only |
+| Crouch speed | 3 m/s | Slower, behind cover |
+| Jump impulse | 5 m/s upward | ~1.25m max jump height |
+| Gravity | 20 m/s² | Slightly heavier than real (9.8). Snappy landings. |
+| Air control | 30% of ground speed | Can adjust mid-air but not full strafe |
+| Acceleration (ground) | 50 m/s² | Near-instant. Responsive, not floaty. |
+| Deceleration (ground) | 50 m/s² | Stop fast. No ice-skating. |
+| Acceleration (air) | 15 m/s² | Slower air control, committed jumps |
+
+**Movement feel targets:**
+- Grounded, responsive, no float
+- Sprint feels noticeably faster but doesn't break spatial awareness
+- Jumping is a commitment (can't bunny-hop effectively due to landing recovery)
+- Crouch is for using cover, not for crouch-spamming
+
+**Coyote time:** 0.1s — player can still jump for 0.1s after walking off an edge.
+**Jump buffer:** 0.1s — pressing jump just before landing still registers.
+
+### Combat
+
+| Action | Key | Behavior |
+|---|---|---|
+| Fire | Left Mouse (hold or click) | Fires current card pack. Semi-auto feel at ~2/sec. |
+| Reload | R | Manual reload. 2 sec animation. Wastes remaining bullets in current pack. Reshuffles deck. |
+| Aim (ADS) | Right Mouse (hold) | Slight zoom (FOV 90→75), tighter crosshair, slower move speed |
+
+**Firing behavior:**
+- Semi-automatic: player must click for each shot (no full-auto hold)
+- Fire rate cap: ~2 shots/sec (0.5s between shots minimum)
+- Raycast from camera center (hitscan, not projectile for Gate 1)
+- Bullet spread: none while standing still. Minimal spread while moving (+1 degree). No spread while ADS.
+
+**Why semi-auto, not full-auto:** The revolver fires deliberately. Each shot has weight. At 2/sec, the player has ~0.5s between clicks to glance at the crosshair color if they want. This supports card-mode awareness. Full-auto hold would encourage spray-without-thinking.
+
+**ADS (Aim Down Sights):**
+
+| Stat | Value |
+|---|---|
+| ADS FOV | 75 (from 90) |
+| ADS move speed | 60% of walk speed (3 m/s) |
+| ADS spread | 0 (perfect accuracy) |
+| ADS transition | 0.15s (snappy) |
+| Can sprint while ADS | No |
+
+**Reload:**
+
+| Stat | Value |
+|---|---|
+| Reload time | 2 seconds |
+| Can cancel reload | No (committed once started) |
+| Can move during reload | Yes (walk speed only, no sprint) |
+| Can fire during reload | No |
+| Visual | Revolver cylinder opens, card-colored rounds visible, new rounds load in |
+
+**Reload is a commitment.** 2 seconds of no shooting, no sprinting. This is the cost of reshuffling. Rushers can close ~16m during a reload. The player must find safe moments.
+
+### Interaction
+
+| Action | Key | Behavior |
+|---|---|---|
+| Card selection (between waves) | Mouse click on card | Pick 1 from 3 presented cards |
+| Pause | Esc | Pause menu |
+
+### Input priority
+- Fire cancels ADS exit (can fire immediately from ADS)
+- Reload cancels current card pack (remaining bullets wasted)
+- Jump cancels crouch
+- Sprint cancels ADS
+
+---
+
+## 4. WEAPON FEEL (Revolver)
+
+### Visual
+- Revolver held in right hand, offset to lower-right of screen
+- Cylinder visible — shows 6 slots with card-colored rounds
+- As cards are fired, cylinder slots empty (rotate animation per shot)
+- On reload: cylinder swings open, spent rounds eject, new colored rounds load
+
+### Audio (placeholder descriptions — actual assets TBD)
+- **Fire:** Heavy, punchy revolver crack. Single shot feel. Distinct from enemy weapons.
+- **Reload start:** Cylinder click-open
+- **Reload end:** Cylinder snap-shut (satisfying mechanical sound)
+- **Empty mag click:** Dry-fire sound if player tries to fire with no bullets. Signals "reload now."
+- **Card transition:** Subtle tonal shift when one card pack ends and next begins. Not a UI sound — a world sound. Like a chamber rotating to a different round type.
+
+### Recoil pattern
+- Pure vertical kick: 1-2 degrees upward per shot
+- Recovery: returns to original aim point over 0.2s
+- No horizontal wander (revolver is stable)
+- Visual gun kick: weapon model kicks back slightly on fire, returns
+- At 2 shots/sec, the rhythm is: kick → recover → kick → recover. Metronomic. Satisfying.
+
+### Muzzle flash
+- Color matches current card pack (white/green/orange/blue/purple)
+- Duration: 0.05s per flash
+- Size: moderate (visible but not obscuring)
+- This is a PRIMARY card-mode signal — make it clear
+
+---
+
+## 5. CROSSHAIR
+
+### Design
+- Simple dot + circle reticle
+- Default size: small (encourages precision for Detonator shots)
+- **Entire crosshair tints to current card color** — this is the primary card-mode indicator
+- White = Standard, Green = Venom, Orange = Incendiary, Blue = Piercing, Purple = Detonator
+
+### Crosshair states
+| State | Visual |
+|---|---|
+| Hip-fire, still | Small dot + circle, card-colored |
+| Hip-fire, moving | Slightly expanded circle (+1 px), card-colored |
+| ADS | Dot only (tighter), card-colored |
+| Over enemy | Dot turns red (hit confirmation affordance) |
+| Reloading | Crosshair fades to 50% opacity |
+
+### Hit markers
+- On hit: brief crosshair expansion + white tick marks (standard FPS hit marker)
+- On kill: crosshair flashes + larger X mark
+- On poison stack: green + number pops near crosshair
+- On Detonator execute: large purple burst from crosshair + screen flash
+
+---
+
+## 6. FEEL TARGETS (qualitative)
+
+| Aspect | Target feel | Reference |
+|---|---|---|
+| Movement | Responsive, grounded, no float | DOOM Eternal (slightly slower) |
+| Shooting | Weighty, punchy, deliberate | Destiny 2 hand cannon |
+| Reloading | Mechanical, committed, satisfying sounds | Hunt: Showdown revolver |
+| Card transitions | Smooth color shift, noticeable but not jarring | — (novel, no direct reference) |
+| Taking damage | Urgent but not disorienting | Hades (red flash, quick recovery) |
+| Death | Quick, clear, not punishing to restart | Hotline Miami (instant restart feel) |
+
+---
+
+## 7. IMPORTANT CONSTRAINTS
+
+1. **No head bob.** Interferes with card color reading at crosshair.
+2. **No screen shake on fire.** Interferes with card color reading.
+3. **No motion blur.** Smears the color language.
+4. **No chromatic aberration.** Smears the color language.
+5. **Semi-auto fire only.** Player must click per shot. Supports deliberate shooting.
+6. **Crosshair must always be visible and colored.** No state should hide or obscure the crosshair during combat.
+7. **Camera effects on damage should be brief** (< 0.2s recovery). Player needs to return to reading card colors quickly.
+
+---
+
+## 8. TUNING KNOBS (adjust in playtesting)
+
+| Parameter | Starting value | Range to test |
+|---|---|---|
+| Walk speed | 5 m/s | 4-7 m/s |
+| Sprint speed | 8 m/s | 6-10 m/s |
+| Jump height | ~1.25m | 0.8-1.5m |
+| Gravity | 20 m/s² | 15-25 m/s² |
+| Fire rate | 2 shots/sec | 1.5-3 shots/sec |
+| Recoil kick | 1.5 degrees | 0.5-3 degrees |
+| ADS FOV | 75 | 65-80 |
+| ADS transition time | 0.15s | 0.1-0.25s |
+| Reload time | 2s | 1.5-3s |
+| Mouse sensitivity | 0.002 rad/px | Player-configurable |
+| Coyote time | 0.1s | 0.05-0.15s |
+| Jump buffer | 0.1s | 0.05-0.15s |
