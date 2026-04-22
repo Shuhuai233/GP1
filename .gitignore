@@ -1,0 +1,53 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Godot-specific legacy ignores
+.import/
+export.cfg
+
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono / C# specific
+.mono/
+data_*/
+mono_crash.*.json
+
+# Build artifacts
+builds/
+build/
+dist/
+*.exe
+*.x86_64
+*.x86
+*.pck
+*.zip
+*.apk
+*.aab
+*.ipa
+*.dmg
+
+# Keep export presets in source control, but NOT credentials
+# (export_credentials.cfg contains signing keys and should never be committed)
+export_credentials.cfg
+
+# IDE / editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Local environment / secrets
+.env
+.env.local
+secrets.*
