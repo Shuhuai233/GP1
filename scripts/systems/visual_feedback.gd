@@ -3,7 +3,6 @@
 extends Node3D
 
 @onready var muzzle_flash: GPUParticles3D = $MuzzleFlash
-@onready var hit_effect: GPUParticles3D = $HitEffect
 
 
 func _ready() -> void:
