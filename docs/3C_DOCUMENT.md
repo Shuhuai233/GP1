@@ -46,19 +46,62 @@ The 3C should feel **responsive and modern** — closer to DOOM Eternal / Hades 
 - Far clip: 100m
 - No head bob for Gate 1 (clean read on crosshair color is priority)
 
+### Camera position & attachment
+- Camera attached to character capsule at eye height (1.6m from ground)
+- Horizontal offset: 0 (centered)
+- Camera follows character position with NO interpolation (locked, 1:1). Any smoothing/lag causes motion sickness in first-person.
+- Crouch: camera lowers to 1.0m eye height, interpolated over 0.15s (smooth crouch transition)
+
+### Rotation model
+- **Horizontal rotation (yaw):** applied to the CHARACTER body (CharacterBody3D rotates on Y-axis). Mouse X input → body Y rotation.
+- **Vertical rotation (pitch):** applied to the CAMERA node only (camera rotates on local X-axis). Mouse X input → camera X rotation.
+- **Roll (Z-axis):** NO persistent roll. Camera always returns to level. Brief roll effects allowed (see below).
+- Rotation is Euler-based (pitch + yaw). No quaternion slerp needed for first-person.
+- Rotation is applied IMMEDIATELY from mouse input — no interpolation, no smoothing, no lerp. Raw input → raw rotation. Any delay = nausea.
+
 ### Mouse look
 - Sensitivity: configurable (default ~0.002 rad/pixel, typical for 800 DPI)
 - No mouse acceleration
 - No mouse smoothing
 - Vertical look: clamped to ±85 degrees (can't look straight up/down)
 - Horizontal: unclamped (full 360)
+- Raw mouse input only (Input.MOUSE_MODE_CAPTURED, use InputEventMouseMotion.relative)
+
+### Camera roll effects (Z-axis tilt)
+All roll effects are BRIEF and SMALL. Camera always returns to 0 roll. These are juice, not mechanics.
+
+| Trigger | Roll amount | Duration | Recovery |
+|---|---|---|---|
+| Strafe left | +1.5 degrees (tilt left) | While strafing | 0.2s return to 0 |
+| Strafe right | -1.5 degrees (tilt right) | While strafing | 0.2s return to 0 |
+| Taking damage | Random ±2 degrees | Instant | 0.15s return to 0 |
+| Landing from height | 0 (no roll on land) | — | — |
+| Recoil | 0 (no roll on fire) | — | — |
 
 ### Camera effects (subtle — must not interfere with card color reading)
 - **Recoil kick:** 1-2 degree upward pitch per shot, recovers over 0.2s. Revolver at 2/sec means the camera has a gentle rhythmic bounce.
-- **Landing impact:** small downward pitch (3-5 degrees) on landing from height, recovers in 0.2s
-- **Sprint tilt:** very subtle forward lean (1-2 degrees pitch down) while sprinting. Returns on stop.
+- **Landing impact:** small downward pitch (3-5 degrees) on landing from height >1m, recovers in 0.2s. No effect for small drops.
+- **Sprint tilt:** very subtle forward lean (1-2 degrees pitch down) while sprinting. Interpolated over 0.3s. Returns on stop.
+- **Damage flinch:** random pitch kick (2-4 degrees in random direction), recovers in 0.15s. Brief — player must return to reading card colors quickly.
 - **NO screen shake for Gate 1.** Screen shake competes with card color readability. Add later if needed.
 - **NO chromatic aberration, NO motion blur.** These smear the color language.
+
+### Camera state transitions
+
+| From → To | Behavior |
+|---|---|
+| Hip → ADS | FOV 90→75 over 0.15s (linear interpolation). Camera position unchanged. |
+| ADS → Hip | FOV 75→90 over 0.15s. |
+| Standing → Crouch | Camera Y position 1.6m→1.0m over 0.15s (smooth). |
+| Crouch → Standing | Camera Y position 1.0m→1.6m over 0.15s. Check headroom first — cancel if blocked. |
+| Alive → Death | Camera drops to ground (physics-driven fall or scripted Y interpolation to 0.3m over 0.5s). Pitch tilts to ~30 degrees. Slight random roll (±10 degrees). Freeze at final position. No ragdoll cam for Gate 1. |
+| Combat → Card selection | Camera stays in-world at current position. Card selection UI overlays. Player CAN still look around but CANNOT fire or move. Mouse cursor appears for card picking. |
+| Card selection → Combat | UI dismisses. Mouse cursor hides. Full control returns. Brief 0.5s grace period (no enemy damage) to re-orient. |
+
+### Camera during reload
+- Camera stays fully controlled by player (can still look around during reload)
+- No camera animation during reload — the weapon model animates (cylinder open/close), not the camera
+- Player can track enemies while reloading (important for Rusher awareness)
 
 ### Critical constraint
 The crosshair area must remain visually clean at all times. Card color tinting is communicated through the crosshair. Any camera effect that obscures, smears, or distracts from the screen center works AGAINST the core mechanic.
