@@ -1,11 +1,26 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/weapon.tscn" id="2"]
+[ext_resource type="Shader" path="res://assets/shaders/screen_vignette.gdshader" id="3"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.3
 height = 1.8
+
+[sub_resource type="ShaderMaterial" id="damage_shader_mat"]
+shader = ExtResource("3")
+shader_parameter/color = Color(1, 0, 0, 1)
+shader_parameter/intensity = 0.0
+shader_parameter/inner_radius = 0.3
+shader_parameter/outer_radius = 0.7
+
+[sub_resource type="ShaderMaterial" id="vignette_shader_mat"]
+shader = ExtResource("3")
+shader_parameter/color = Color(0.5, 0, 0, 1)
+shader_parameter/intensity = 0.0
+shader_parameter/inner_radius = 0.4
+shader_parameter/outer_radius = 0.85
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
@@ -37,7 +52,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(1, 0, 0, 0)
+material = SubResource("damage_shader_mat")
+color = Color(1, 1, 1, 1)
 
 [node name="LowHPVignette" type="ColorRect" parent="ScreenEffects"]
 anchors_preset = 15
@@ -46,4 +62,5 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.5, 0, 0, 0)
+material = SubResource("vignette_shader_mat")
+color = Color(1, 1, 1, 1)

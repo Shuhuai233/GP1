@@ -1,6 +1,7 @@
 ## Player — FPS controller per 3C document
-## Walk, sprint, crouch, jump (coyote + buffer), acceleration model, air control
-## ADS, damage feedback, camera effects (recoil, landing, sprint tilt)
+## Walk, sprint (forward-only), crouch, jump (coyote + buffer), acceleration model, air control
+## ADS, damage feedback, camera effects (recoil, landing, sprint tilt, strafe roll, damage roll)
+## Death camera sequence
 extends CharacterBody3D
 
 # --- Movement ---
@@ -14,6 +15,7 @@ extends CharacterBody3D
 @export var ground_accel: float = 50.0
 @export var ground_decel: float = 50.0
 @export var air_accel: float = 15.0
+@export var air_decel: float = 5.0  # Low decel preserves momentum for "committed jumps"
 @export var air_control_factor: float = 0.3
 
 @export_group("Jump Assist")
@@ -35,15 +37,25 @@ extends CharacterBody3D
 @export var landing_kick_degrees: float = 4.0
 @export var landing_recovery_time: float = 0.2
 @export var sprint_tilt_degrees: float = 1.5
+@export var sprint_tilt_transition_time: float = 0.3
+@export var strafe_roll_degrees: float = 2.0
+@export var strafe_roll_speed: float = 8.0
 @export var damage_flinch_degrees: float = 3.0
 @export var damage_flinch_recovery: float = 0.15
+@export var damage_roll_degrees: float = 2.0
 
 @export_group("Crouch")
 @export var stand_height: float = 1.8
 @export var crouch_height: float = 1.0
-@export var crouch_eye_height: float = 0.9
+@export var crouch_eye_height: float = 1.0  # 3C doc: crouch eye at 1.0m
 @export var stand_eye_height: float = 1.6
-@export var crouch_transition_speed: float = 10.0
+@export var crouch_transition_speed: float = 4.0  # 0.6m / 0.15s ≈ 4.0
+
+@export_group("Death Camera")
+@export var death_eye_height: float = 0.3
+@export var death_pitch_tilt: float = 30.0  # degrees
+@export var death_roll: float = 10.0  # degrees
+@export var death_drop_time: float = 0.5
 
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
@@ -59,18 +71,22 @@ var is_crouching: bool = false
 var is_sprinting: bool = false
 var is_ads: bool = false
 var was_on_floor: bool = true
+var prev_fall_velocity: float = 0.0
 
 # Jump assist
 var coyote_timer: float = 0.0
 var jump_buffer_timer: float = 0.0
 
 # Camera effect state
-var recoil_offset: float = 0.0  # Current recoil pitch offset in radians
+var recoil_offset: float = 0.0
 var landing_offset: float = 0.0
 var sprint_tilt_current: float = 0.0
-var flinch_offset: float = 0.0
+var strafe_roll_current: float = 0.0
+var flinch_pitch_offset: float = 0.0
+var flinch_yaw_offset: float = 0.0
+var damage_roll_offset: float = 0.0
 
-# Weapon reference (set after tree ready)
+# Weapon reference
 var weapon: Node3D = null
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -80,19 +96,16 @@ func _ready() -> void:
 	current_hp = max_hp
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
-	# Camera setup per 3C doc
 	camera.fov = default_fov
 	camera.near = 0.05
 	camera.far = 100.0
 
-	# Find weapon
 	weapon = get_node_or_null("Head/WeaponHolder")
 
-	# Initialize damage overlay
-	if damage_overlay:
-		damage_overlay.modulate.a = 0.0
-	if vignette:
-		vignette.modulate.a = 0.0
+	if damage_overlay and damage_overlay.material:
+		damage_overlay.material.set_shader_parameter("intensity", 0.0)
+	if vignette and vignette.material:
+		vignette.material.set_shader_parameter("intensity", 0.0)
 
 	EventBus.player_health_changed.emit(current_hp, max_hp)
 	EventBus.weapon_fired.connect(_on_weapon_fired)
@@ -131,13 +144,16 @@ func _physics_process(delta: float) -> void:
 	# --- Coyote time ---
 	if is_on_floor():
 		coyote_timer = coyote_time
-		# Landing impact detection
-		if not was_on_floor and velocity.y < -3.0:
+		# Landing impact: trigger on landing from >= ~1m fall (velocity >= 6.3 m/s)
+		if not was_on_floor and prev_fall_velocity < -6.0:
 			_apply_landing_impact()
 	else:
 		coyote_timer -= delta
 
 	was_on_floor = is_on_floor()
+	# Track fall velocity before move_and_slide resets it
+	if not is_on_floor():
+		prev_fall_velocity = velocity.y
 
 	# --- Gravity ---
 	if not is_on_floor():
@@ -151,12 +167,15 @@ func _physics_process(delta: float) -> void:
 			coyote_timer = 0.0
 			jump_buffer_timer = 0.0
 
+	# --- Input ---
+	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+
 	# --- Sprint / ADS state ---
-	# Sprint cancels ADS
 	var wants_sprint := Input.is_action_pressed("sprint") and not is_crouching
 	var wants_ads := Input.is_action_pressed("ads")
 
-	if wants_sprint:
+	# Sprint requires forward input (input_dir.y < 0 = forward in get_vector)
+	if wants_sprint and input_dir.y < 0.0:
 		is_ads = false
 		is_sprinting = true
 	else:
@@ -175,7 +194,6 @@ func _physics_process(delta: float) -> void:
 		is_reloading = weapon.is_reloading()
 
 	if is_reloading:
-		# Walk only during reload, no sprint
 		is_sprinting = false
 		target_speed = walk_speed
 	elif is_crouching:
@@ -187,17 +205,15 @@ func _physics_process(delta: float) -> void:
 	else:
 		target_speed = walk_speed
 
-	# --- Movement with acceleration ---
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-
-	# Sprint is forward-only per 3C
+	# Sprint is forward-only: zero strafe and backward
 	if is_sprinting:
 		input_dir.x = 0.0
-		if input_dir.y > 0.0:  # backward
+		if input_dir.y > 0.0:
 			input_dir.y = 0.0
 
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
+	# --- Acceleration ---
 	var accel: float
 	var decel: float
 	if is_on_floor():
@@ -205,9 +221,9 @@ func _physics_process(delta: float) -> void:
 		decel = ground_decel
 	else:
 		accel = air_accel
-		# Air: limit to air_control_factor of ground speed
-		target_speed *= air_control_factor if not is_on_floor() else 1.0
-		decel = air_accel
+		decel = air_decel
+		# Air: new input limited to 30% of walk speed; existing momentum preserved by low decel
+		target_speed = walk_speed * air_control_factor
 
 	if direction:
 		velocity.x = move_toward(velocity.x, direction.x * target_speed, accel * delta)
@@ -219,7 +235,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	# --- Camera effects ---
-	_update_camera_effects(delta)
+	_update_camera_effects(delta, input_dir)
 
 	# --- Crouch interpolation ---
 	_update_crouch(delta)
@@ -229,39 +245,62 @@ func _physics_process(delta: float) -> void:
 	camera.fov = move_toward(camera.fov, target_fov, (default_fov - ads_fov) * ads_transition_speed * delta)
 
 
-func _update_camera_effects(delta: float) -> void:
-	# Recoil recovery
+func _update_camera_effects(delta: float, input_dir: Vector2) -> void:
+	# --- Recoil recovery ---
 	if recoil_offset > 0:
 		var recovery_rate := deg_to_rad(recoil_kick_degrees) / recoil_recovery_time
 		recoil_offset = move_toward(recoil_offset, 0.0, recovery_rate * delta)
 
-	# Landing recovery
+	# --- Landing recovery ---
 	if landing_offset > 0:
 		var recovery_rate := deg_to_rad(landing_kick_degrees) / landing_recovery_time
 		landing_offset = move_toward(landing_offset, 0.0, recovery_rate * delta)
 
-	# Flinch recovery
-	if flinch_offset != 0:
+	# --- Flinch recovery (pitch + yaw) ---
+	if flinch_pitch_offset != 0:
 		var recovery_rate := deg_to_rad(damage_flinch_degrees) / damage_flinch_recovery
-		flinch_offset = move_toward(flinch_offset, 0.0, recovery_rate * delta)
+		flinch_pitch_offset = move_toward(flinch_pitch_offset, 0.0, recovery_rate * delta)
+	if flinch_yaw_offset != 0:
+		var recovery_rate := deg_to_rad(damage_flinch_degrees) / damage_flinch_recovery
+		flinch_yaw_offset = move_toward(flinch_yaw_offset, 0.0, recovery_rate * delta)
 
-	# Sprint tilt
+	# --- Damage roll recovery ---
+	if damage_roll_offset != 0:
+		var recovery_rate := deg_to_rad(damage_roll_degrees) / damage_flinch_recovery
+		damage_roll_offset = move_toward(damage_roll_offset, 0.0, recovery_rate * delta)
+
+	# --- Sprint tilt (forward lean) ---
 	var tilt_target := deg_to_rad(-sprint_tilt_degrees) if is_sprinting else 0.0
-	sprint_tilt_current = move_toward(sprint_tilt_current, tilt_target, deg_to_rad(sprint_tilt_degrees) * 5.0 * delta)
+	var tilt_rate := deg_to_rad(sprint_tilt_degrees) / sprint_tilt_transition_time
+	sprint_tilt_current = move_toward(sprint_tilt_current, tilt_target, tilt_rate * delta)
 
-	# Apply all offsets to head (additive on top of mouse look)
-	# We store the combined offset separately to avoid accumulation
-	camera.rotation.x = -recoil_offset - landing_offset + flinch_offset
-	camera.rotation.z = 0.0  # reset before applying tilt
-	# Sprint tilt is on pitch (forward lean)
-	camera.rotation.x += sprint_tilt_current
+	# --- Strafe roll (Z-axis tilt) ---
+	var roll_target := 0.0
+	if input_dir.x < -0.1:
+		roll_target = deg_to_rad(strafe_roll_degrees)  # Tilt left when strafing left
+	elif input_dir.x > 0.1:
+		roll_target = deg_to_rad(-strafe_roll_degrees)  # Tilt right when strafing right
+	strafe_roll_current = lerp(strafe_roll_current, roll_target, strafe_roll_speed * delta)
 
-	# Low HP vignette
-	if vignette:
+	# --- Apply all camera offsets ---
+	# Pitch: recoil (up) + landing (down) + flinch (random) + sprint lean
+	camera.rotation.x = -recoil_offset - landing_offset + flinch_pitch_offset + sprint_tilt_current
+
+	# Roll: strafe roll + damage roll
+	camera.rotation.z = strafe_roll_current + damage_roll_offset
+
+	# Yaw flinch applied to body (small, transient)
+	if absf(flinch_yaw_offset) > 0.001:
+		rotate_y(flinch_yaw_offset * delta * 10.0)
+
+	# --- Low HP vignette (shader) ---
+	if vignette and vignette.material:
 		if current_hp > 0 and current_hp / max_hp < 0.3:
-			vignette.modulate.a = lerp(vignette.modulate.a, 0.3, delta * 3.0)
+			var current_intensity: float = vignette.material.get_shader_parameter("intensity")
+			vignette.material.set_shader_parameter("intensity", lerp(current_intensity, 0.3, delta * 3.0))
 		else:
-			vignette.modulate.a = lerp(vignette.modulate.a, 0.0, delta * 5.0)
+			var current_intensity: float = vignette.material.get_shader_parameter("intensity")
+			vignette.material.set_shader_parameter("intensity", lerp(current_intensity, 0.0, delta * 5.0))
 
 
 func _update_crouch(delta: float) -> void:
@@ -276,11 +315,10 @@ func _update_crouch(delta: float) -> void:
 
 func _enter_crouch() -> void:
 	is_crouching = true
-	is_sprinting = false  # Can't sprint while crouching
+	is_sprinting = false
 
 
 func _try_uncrouch() -> void:
-	# Check if there's room to stand
 	var space := get_world_3d().direct_space_state
 	var query := PhysicsRayQueryParameters3D.create(
 		global_position + Vector3.UP * crouch_height,
@@ -298,7 +336,6 @@ func _apply_landing_impact() -> void:
 
 
 func _on_weapon_fired(_card: Resource) -> void:
-	# Recoil kick per shot
 	recoil_offset += deg_to_rad(recoil_kick_degrees)
 
 
@@ -309,15 +346,22 @@ func take_damage(amount: float) -> void:
 	EventBus.player_health_changed.emit(current_hp, max_hp)
 	EventBus.player_damaged.emit(amount)
 
-	# Camera flinch: random pitch kick
-	flinch_offset = deg_to_rad(randf_range(-damage_flinch_degrees, damage_flinch_degrees))
+	# Camera flinch: random pitch + yaw
+	flinch_pitch_offset = deg_to_rad(randf_range(-damage_flinch_degrees, damage_flinch_degrees))
+	flinch_yaw_offset = deg_to_rad(randf_range(-damage_flinch_degrees * 0.5, damage_flinch_degrees * 0.5))
 
-	# Red screen flash
-	if damage_overlay:
+	# Damage roll: ±2 degrees
+	damage_roll_offset = deg_to_rad(randf_range(-damage_roll_degrees, damage_roll_degrees))
+
+	# Red screen edge flash (shader vignette)
+	if damage_overlay and damage_overlay.material:
 		var intensity := clampf(amount / 30.0, 0.15, 0.6)
-		damage_overlay.modulate = Color(1, 0, 0, intensity)
+		damage_overlay.material.set_shader_parameter("intensity", intensity)
 		var tween := create_tween()
-		tween.tween_property(damage_overlay, "modulate:a", 0.0, 0.3)
+		tween.tween_method(
+			func(val: float): damage_overlay.material.set_shader_parameter("intensity", val),
+			intensity, 0.0, 0.3
+		)
 
 	if current_hp <= 0.0:
 		die()
@@ -326,6 +370,14 @@ func take_damage(amount: float) -> void:
 func die() -> void:
 	is_dead = true
 	EventBus.player_died.emit()
+
+	# Death camera: drop eye to 0.3m, tilt pitch 30°, roll ±10°, freeze
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(head, "position:y", death_eye_height, death_drop_time).set_ease(Tween.EASE_IN)
+	tween.tween_property(head, "rotation:x", deg_to_rad(-death_pitch_tilt), death_drop_time)
+	var roll_dir := 1.0 if randf() > 0.5 else -1.0
+	tween.tween_property(camera, "rotation:z", deg_to_rad(death_roll * roll_dir), death_drop_time)
 
 
 func heal(amount: float) -> void:

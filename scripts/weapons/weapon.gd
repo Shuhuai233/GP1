@@ -114,27 +114,34 @@ func fire() -> void:
 	can_fire = false
 	fire_timer.start()
 
+	# Raycast from camera center per 3C doc (not weapon offset)
+	var cam := get_viewport().get_camera_3d()
+	if not cam:
+		return
+
+	var cam_from := cam.global_position
+	var cam_forward := -cam.global_transform.basis.z
+
 	# Calculate spread
 	var spread_degrees := _get_current_spread()
 	var spread_rad := deg_to_rad(spread_degrees)
-
-	# Apply spread to raycast direction
+	var shoot_dir := cam_forward
 	if spread_rad > 0:
-		var spread_offset := Vector3(
-			randf_range(-spread_rad, spread_rad),
-			randf_range(-spread_rad, spread_rad),
-			0
-		)
-		raycast.target_position = (Vector3(0, 0, -max_ray_distance) + spread_offset * max_ray_distance).normalized() * max_ray_distance
-	else:
-		raycast.target_position = Vector3(0, 0, -max_ray_distance)
+		shoot_dir = shoot_dir.rotated(cam.global_transform.basis.x, randf_range(-spread_rad, spread_rad))
+		shoot_dir = shoot_dir.rotated(cam.global_transform.basis.y, randf_range(-spread_rad, spread_rad))
+		shoot_dir = shoot_dir.normalized()
 
-	# Raycast hit detection
-	raycast.force_raycast_update()
-	if raycast.is_colliding():
-		var collider := raycast.get_collider()
-		var hit_point := raycast.get_collision_point()
-		var hit_normal := raycast.get_collision_normal()
+	var cam_to := cam_from + shoot_dir * max_ray_distance
+
+	# Direct space state query from camera center
+	var space := get_world_3d().direct_space_state
+	var query := PhysicsRayQueryParameters3D.create(cam_from, cam_to, 0b0101)  # env + enemies
+	var result := space.intersect_ray(query)
+
+	if result:
+		var collider = result.collider
+		var hit_point: Vector3 = result.position
+		var hit_normal: Vector3 = result.normal
 
 		if collider.has_method("take_bullet_hit"):
 			collider.take_bullet_hit(card)
@@ -144,10 +151,9 @@ func fire() -> void:
 
 		# Piercing: continue through first target
 		if card.piercing and collider.has_method("take_bullet_hit"):
-			_pierce_check(hit_point, hit_normal, card)
+			_pierce_check(hit_point, shoot_dir, card)
 	else:
-		# Total miss
-		var miss_point := raycast.global_position + raycast.global_transform.basis * raycast.target_position
+		var miss_point := cam_to
 		EventBus.hit_missed.emit(miss_point, card)
 
 	EventBus.weapon_fired.emit(card)
@@ -162,12 +168,11 @@ func _get_current_spread() -> float:
 	return base_spread
 
 
-func _pierce_check(from_point: Vector3, _normal: Vector3, card: CardData) -> void:
+func _pierce_check(from_point: Vector3, shoot_dir: Vector3, card: CardData) -> void:
 	var space_state := get_world_3d().direct_space_state
-	var forward := -global_transform.basis.z
 	var query := PhysicsRayQueryParameters3D.create(
-		from_point + forward * 0.1,
-		from_point + forward * max_ray_distance,
+		from_point + shoot_dir * 0.1,
+		from_point + shoot_dir * max_ray_distance,
 		0b0100  # Only enemies layer
 	)
 	var result := space_state.intersect_ray(query)
