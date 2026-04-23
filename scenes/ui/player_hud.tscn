@@ -29,6 +29,7 @@ offset_right = 16.0
 offset_bottom = 16.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 texture = SubResource("crosshair_tex")
 
 [node name="CrosshairDot" type="ColorRect" parent="Crosshair"]
@@ -44,6 +45,7 @@ offset_right = 2.0
 offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="CrosshairTop" type="ColorRect" parent="Crosshair"]
@@ -56,6 +58,7 @@ offset_top = -2.0
 offset_right = 1.0
 offset_bottom = 6.0
 grow_horizontal = 2
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="CrosshairBottom" type="ColorRect" parent="Crosshair"]
@@ -71,6 +74,7 @@ offset_right = 1.0
 offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="CrosshairLeft" type="ColorRect" parent="Crosshair"]
@@ -83,6 +87,7 @@ offset_top = -1.0
 offset_right = 6.0
 offset_bottom = 1.0
 grow_vertical = 2
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="CrosshairRight" type="ColorRect" parent="Crosshair"]
@@ -98,6 +103,7 @@ offset_right = 2.0
 offset_bottom = 1.0
 grow_horizontal = 0
 grow_vertical = 2
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="AmmoContainer" type="VBoxContainer" parent="."]
@@ -112,10 +118,12 @@ offset_right = 30.0
 offset_bottom = -40.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
 alignment = 1
 
 [node name="AmmoLabel" type="Label" parent="AmmoContainer"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 24
 text = "6"
 horizontal_alignment = 1
@@ -132,36 +140,43 @@ offset_right = 45.0
 offset_bottom = -25.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
 alignment = 1
 
 [node name="Pack1" type="ColorRect" parent="PackIndicators"]
 layout_mode = 2
 custom_minimum_size = Vector2(12, 8)
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="Pack2" type="ColorRect" parent="PackIndicators"]
 layout_mode = 2
 custom_minimum_size = Vector2(12, 8)
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="Pack3" type="ColorRect" parent="PackIndicators"]
 layout_mode = 2
 custom_minimum_size = Vector2(12, 8)
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="Pack4" type="ColorRect" parent="PackIndicators"]
 layout_mode = 2
 custom_minimum_size = Vector2(12, 8)
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="Pack5" type="ColorRect" parent="PackIndicators"]
 layout_mode = 2
 custom_minimum_size = Vector2(12, 8)
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="Pack6" type="ColorRect" parent="PackIndicators"]
 layout_mode = 2
 custom_minimum_size = Vector2(12, 8)
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="CardIcon" type="ColorRect" parent="."]
@@ -176,6 +191,7 @@ offset_right = 60.0
 offset_bottom = -40.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
 [node name="HPBar" type="ProgressBar" parent="."]
@@ -190,6 +206,7 @@ offset_right = 100.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
 max_value = 100.0
 value = 100.0
 show_percentage = false
@@ -206,6 +223,7 @@ offset_right = 50.0
 offset_bottom = 55.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 text = "RELOADING"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -222,6 +240,7 @@ offset_right = 12.0
 offset_bottom = 12.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="TL" type="ColorRect" parent="HitMarker"]
 layout_mode = 1
@@ -230,6 +249,7 @@ offset_top = 0.0
 offset_right = 6.0
 offset_bottom = 2.0
 rotation = 0.785
+mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="TR" type="ColorRect" parent="HitMarker"]
@@ -239,6 +259,7 @@ offset_top = 0.0
 offset_right = 24.0
 offset_bottom = 2.0
 rotation = -0.785
+mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="BL" type="ColorRect" parent="HitMarker"]
@@ -248,6 +269,7 @@ offset_top = 22.0
 offset_right = 6.0
 offset_bottom = 24.0
 rotation = -0.785
+mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="BR" type="ColorRect" parent="HitMarker"]
@@ -257,6 +279,7 @@ offset_top = 22.0
 offset_right = 24.0
 offset_bottom = 24.0
 rotation = 0.785
+mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
 [node name="StackPopup" type="Label" parent="."]
@@ -271,6 +294,7 @@ offset_right = 70.0
 offset_bottom = 10.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.2, 0.9, 0.2, 1)
 text = "+2"
