@@ -1,6 +1,9 @@
-# GP1 — Gate 1 Build Reference
+# GP1 — Gate 1 Build Reference (SUPERSEDED)
 
-*Generated from design session 2026-04-22. This file is the single source of truth for building the Gate 1 prototype.*
+**⚠️ THIS DOCUMENT IS OUTDATED. It predates the two-hand system (2026-04-25).**
+**⚠️ See `docs/GAME_DESIGN_DOCUMENT.md` for the current single source of truth.**
+
+*Original generation date: 2026-04-22.*
 
 ---
 
