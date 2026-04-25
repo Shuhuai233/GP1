@@ -328,3 +328,57 @@ Redesign GP1's card system around the synergy framework above. Specific delivera
 2. Redesign all cards as Enabler/Payoff/Multiplier
 3. Design the "combo discovery" moment for Gate 2 prototype
 4. Ensure every card is simple alone, powerful in combination
+
+---
+
+## APPENDIX: Steam Review Data (real player quotes)
+
+*Fetched from Steam API on 2026-04-24.*
+
+### Slay the Spire 1 — 75,066 reviews, 97.5% positive
+
+**Positive patterns (what makes players stay):**
+- "Mechanics are so incredibly well designed it actually makes me like the art style"
+- "I hate card games, yet I love this one. Easy to learn, fun to play"
+- "Every choice matters"
+- "MacGyver jigsaw puzzle game — scrounge up what you find, figure out how to survive"
+- "Building a deck that slowly becomes stronger is incredibly satisfying, especially when everything finally comes together"
+- "Even a lost run teaches you something"
+- Average playtime in reviews: 1,000-5,000 minutes (16-83 hours)
+
+**Negative patterns (#1 theme: RNG frustration):**
+- "Too hard, not fun unless you've memorized everything"
+- "RNG feels miserable... terrible hand = half my health gone with nothing I can do"
+- "Too passive, correct move is just play all cards in any order"
+- "Feels like pure luck... 17 losses and 3 wins"
+- "Most cards slot neatly into one archetype, not multiple" (DIRECTLY relevant to GP1)
+- "After a great run I don't feel like I did much to achieve it, just pulled the slot machine lever"
+
+**GP1 lesson:** Bad-draw frustration is the #1 risk for any card-based game. Mitigation: card foresight (see next 2), reload-as-reshuffle (agency over bad draws), and status combos that work across card types (not siloed archetypes).
+
+### Vampire Survivors — 126,040 reviews, 98.5% positive
+
+**Positive patterns (what hooks players):**
+- "Turn off your brain and kill everything on screen"
+- "This game hypnotizes me"
+- "Tons of content, fun for first 50 hours"
+- "Mindless fun with awesome music"
+- "Some combinations of weapons can be downright deadly" (the evolution hook)
+- "Every new item unlocked feels like true progression"
+- Multiple reviewers own it on 3-5 platforms
+
+**Negative patterns:**
+- "Runs drag in beginnings AND ends"
+- "In a post-Brotato world, this game does not hold up" (genre iterated on)
+- "Addictive but very boring gameplay. Run in circles" (no skill expression)
+- "The game's loop doesn't grab me — just running through phases, repeat" (shallow)
+- "Obtuse progression (invisible items, mandatory unstated side quests)"
+- "The design is unhealthy... this software is a drug. That is not a compliment."
+
+**GP1 lesson:** VS weakness (no skill) = GP1 strength (aiming matters). VS strength (builds coming online) = GP1's current gap. The status combo system addresses this.
+
+### StS2 comparison (from StS1 reviewer with 440+ hours across both):
+- "StS2 is ridiculous. Unfun with how hard it is. The approach is 'punish punish, try to control exactly how you play, Punish.'"
+- "StS1 is 'here's a challenge. Figure it out.' That is waayyy more fun."
+
+**GP1 lesson:** Challenge should feel like a puzzle to solve, not punishment. Don't overcorrect on difficulty.
