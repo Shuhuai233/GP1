@@ -15,6 +15,7 @@ const ENEMY_ADD_PER_WAVE: int = 1        # +1 enemy every wave after wave 3 (som
 var total_enemies_killed: int = 0
 var total_cards_collected: int = 0
 var waves_survived: int = 0
+var highest_combo_damage: float = 0.0  # GDD §8: track highest combo
 
 var spawn_points: Array[Marker3D] = []
 var player: Node3D = null
@@ -38,6 +39,7 @@ var _offer_pool: Array[CardData]
 func _ready() -> void:
 	EventBus.enemy_died.connect(_on_enemy_died)
 	EventBus.card_selected.connect(_on_card_selected)
+	EventBus.enemy_poison_detonated.connect(_on_detonator_hit)
 
 	_offer_pool = [
 		preload("res://data/cards/venom_round.tres"),
@@ -89,9 +91,10 @@ func _get_wave_enemies(wave: int) -> Array:
 	if wave <= wave_defs.size():
 		return wave_defs[wave - 1]
 
-	# Wave 4+: scale up
+	# Wave 4+: +1-2 enemies per wave (GDD §8: "+1-2 per wave")
 	var extra_waves := wave - wave_defs.size()
-	var total_enemies := 7 + extra_waves  # wave 3 has 7; add 1 per extra wave
+	var added := extra_waves + randi_range(0, 1)  # +1 or +2 per wave randomly
+	var total_enemies := 7 + added
 	# Randomize composition from all 3 types
 	var enemies := []
 	var remaining := total_enemies
@@ -196,9 +199,15 @@ func is_grace_period() -> bool:
 	return _grace_active
 
 
+func _on_detonator_hit(_enemy: Node3D, _stacks: int, bonus_damage: float, _toxic_fire: bool) -> void:
+	if bonus_damage > highest_combo_damage:
+		highest_combo_damage = bonus_damage
+
+
 func get_recap_data() -> Dictionary:
 	return {
 		"waves_survived": waves_survived,
 		"enemies_killed": total_enemies_killed,
 		"cards_collected": total_cards_collected,
+		"highest_combo": highest_combo_damage,
 	}

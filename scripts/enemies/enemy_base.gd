@@ -18,7 +18,7 @@ var current_hp: float
 var is_dead: bool = false
 var player: Node3D = null
 var attack_timer: float = 0.0
-var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var gravity: float = 20.0  # GDD §6: 20 m/s²
 
 
 func _ready() -> void:

@@ -5,6 +5,9 @@ extends EnemyBase
 
 enum BigEyeState { IDLE, CHARGING, FIRING, COOLDOWN }
 
+const PREFERRED_RANGE_MIN: float = 20.0
+const PREFERRED_RANGE_MAX: float = 30.0
+
 @export var charge_time: float = 1.5
 @export var beam_damage: float = 20.0
 @export var fire_cooldown: float = 3.0
@@ -36,21 +39,27 @@ func _update_behavior(delta: float) -> void:
 	look_target.y = global_position.y
 	look_at(look_target)
 
-	# Slow drift to preferred range
-	if dist > attack_range:
+	# Move to stay within 20-30m preferred range
+	if dist > PREFERRED_RANGE_MAX:
+		# Too far — approach
 		nav_agent.target_position = player.global_position
 		if not nav_agent.is_navigation_finished():
 			var next_pos := nav_agent.get_next_path_position()
 			var direction := (next_pos - global_position).normalized()
 			velocity.x = direction.x * move_speed
 			velocity.z = direction.z * move_speed
+	elif dist < PREFERRED_RANGE_MIN:
+		# Too close — back away slowly
+		var away_dir := (global_position - player.global_position).normalized()
+		velocity.x = away_dir.x * move_speed
+		velocity.z = away_dir.z * move_speed
 	else:
 		velocity.x = 0.0
 		velocity.z = 0.0
 
 	match eye_state:
 		BigEyeState.IDLE:
-			if dist <= attack_range:
+			if dist <= PREFERRED_RANGE_MAX:
 				eye_state = BigEyeState.CHARGING
 				charge_timer = charge_time
 				_set_telegraph(true)

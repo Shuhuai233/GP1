@@ -168,8 +168,31 @@ func _on_enemy_killed(_enemy: Node3D) -> void:
 	_show_hit_marker(Color(1, 0.3, 0.3), 0.3)
 
 
-func _on_poison_detonated(_enemy: Node3D, _stacks: int, _bonus: float, _toxic_fire: bool) -> void:
+func _on_poison_detonated(_enemy: Node3D, _stacks: int, bonus: float, toxic_fire: bool) -> void:
+	# Large purple burst hit marker
 	_show_hit_marker(Color(0.7, 0.2, 1.0), 0.5)
+	# Screen flash — brief purple overlay
+	var flash := ColorRect.new()
+	flash.color = Color(0.4, 0.0, 0.6, 0.3)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(flash)
+	var ftween := create_tween()
+	ftween.tween_property(flash, "modulate:a", 0.0, 0.3)
+	ftween.tween_callback(flash.queue_free)
+	# BOOM / TOXIC FIRE text popup
+	var popup := Label.new()
+	popup.text = "TOXIC FIRE! +%.0f" % bonus if toxic_fire else "BOOM! +%.0f" % bonus
+	popup.add_theme_font_size_override("font_size", 22)
+	var popup_color := Color(0.4, 1.0, 0.1, 1.0) if toxic_fire else Color(0.7, 0.2, 1.0, 1.0)
+	popup.add_theme_color_override("font_color", popup_color)
+	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup.position = get_viewport().get_visible_rect().size / 2.0 + Vector2(-60, -50)
+	add_child(popup)
+	var tween2 := create_tween().set_parallel(true)
+	tween2.tween_property(popup, "position:y", popup.position.y - 40, 0.6)
+	tween2.tween_property(popup, "modulate:a", 0.0, 0.6).set_delay(0.2)
+	tween2.tween_callback(popup.queue_free).set_delay(0.8)
 
 
 func _on_enemy_status_applied(_enemy: Node3D, status_type: String, stacks: int) -> void:

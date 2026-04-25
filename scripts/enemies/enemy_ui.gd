@@ -48,19 +48,14 @@ func set_hp(current: float, max_val: float) -> void:
 	hp_bar_bg.visible = true
 	hp_bar_fill.visible = true
 
-	# Scale fill bar (full width = 1.2m, scales left to right)
 	var pct := clampf(current / max_val, 0.0, 1.0)
 	hp_bar_fill.scale.x = pct
-	# Offset so it shrinks from the right
-	hp_bar_fill.position.x = (pct - 1.0) * 0.6  # -0.6 to 0
+	hp_bar_fill.position.x = (pct - 1.0) * 0.6
 
-	# Color shift: green → yellow → red
+	# GDD §7: fill is RED, always
 	var mat: StandardMaterial3D = hp_bar_fill.get_surface_override_material(0)
 	if mat:
-		if pct > 0.5:
-			mat.albedo_color = Color(1.0 - (pct - 0.5) * 2.0, 1.0, 0.0, 1.0)
-		else:
-			mat.albedo_color = Color(1.0, pct * 2.0, 0.0, 1.0)
+		mat.albedo_color = Color(0.85, 0.1, 0.1, 1.0)
 
 
 func set_poison(stacks: int) -> void:
@@ -69,9 +64,9 @@ func set_poison(stacks: int) -> void:
 	else:
 		poison_label.visible = true
 		poison_label.text = "☠ %d" % stacks
-		# Pop animation: scale up briefly
+		# Smooth pop: +20% font size over 0.1s, return over 0.1s
 		var tween := create_tween()
-		tween.tween_property(poison_label, "font_size", 48, 0.0)
+		tween.tween_property(poison_label, "font_size", 43, 0.1)  # 36 * 1.2 ≈ 43
 		tween.tween_property(poison_label, "font_size", 36, 0.1)
 	_update_combo()
 
@@ -80,6 +75,8 @@ func set_burn(is_burning: bool) -> void:
 	burn_label.visible = is_burning
 	if is_burning:
 		_burn_pulse_time = 0.0
+		burn_label.text = "🔥 BURN"
+		burn_label.modulate = Color(1.0, 0.5, 0.0, 1.0)
 	_update_combo()
 
 

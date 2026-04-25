@@ -73,6 +73,7 @@ var is_sprinting: bool = false
 var is_ads: bool = false
 var was_on_floor: bool = true
 var prev_fall_velocity: float = 0.0
+var is_selecting_card: bool = false  # blocks movement+fire during card selection
 
 # Jump assist
 var coyote_timer: float = 0.0
@@ -90,7 +91,7 @@ var damage_roll_offset: float = 0.0
 # Weapon reference
 var weapon: Node3D = null
 
-var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var gravity: float = 20.0  # GDD §6: 20 m/s² — do NOT read from ProjectSettings
 
 
 func _ready() -> void:
@@ -112,6 +113,8 @@ func _ready() -> void:
 	EventBus.player_health_changed.emit(current_hp, max_hp)
 	EventBus.weapon_fired.connect(_on_weapon_fired)
 	EventBus.enemy_died.connect(_on_enemy_killed)
+	EventBus.card_selection_started.connect(func(_c): is_selecting_card = true)
+	EventBus.card_selected.connect(func(_c): is_selecting_card = false)
 
 
 func _on_enemy_killed(_enemy: Node3D) -> void:
@@ -146,14 +149,14 @@ func _input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if is_dead:
+	if is_dead or is_selecting_card:
 		return
 
 	# --- Coyote time ---
 	if is_on_floor():
 		coyote_timer = coyote_time
-		# Landing impact: trigger on landing from >= ~1m fall (velocity >= 6.3 m/s)
-		if not was_on_floor and prev_fall_velocity < -6.0:
+		# Landing impact: trigger at >1m fall (v = sqrt(2*20*1) ≈ 4.47 m/s)
+		if not was_on_floor and prev_fall_velocity < -4.5:
 			_apply_landing_impact()
 	else:
 		coyote_timer -= delta
@@ -282,13 +285,14 @@ func _update_camera_effects(delta: float, input_dir: Vector2) -> void:
 	var tilt_rate := deg_to_rad(sprint_tilt_degrees) / sprint_tilt_transition_time
 	sprint_tilt_current = move_toward(sprint_tilt_current, tilt_target, tilt_rate * delta)
 
-	# --- Strafe roll (Z-axis tilt) ---
+	# --- Strafe roll (Z-axis tilt) — fixed 0.2s return per 3C doc ---
 	var roll_target := 0.0
 	if input_dir.x < -0.1:
-		roll_target = deg_to_rad(strafe_roll_degrees)  # Tilt left when strafing left
+		roll_target = deg_to_rad(strafe_roll_degrees)
 	elif input_dir.x > 0.1:
-		roll_target = deg_to_rad(-strafe_roll_degrees)  # Tilt right when strafing right
-	strafe_roll_current = lerp(strafe_roll_current, roll_target, strafe_roll_speed * delta)
+		roll_target = deg_to_rad(-strafe_roll_degrees)
+	var roll_rate := deg_to_rad(strafe_roll_degrees) / 0.2  # 0.2s return
+	strafe_roll_current = move_toward(strafe_roll_current, roll_target, roll_rate * delta)
 
 	# --- Apply all camera offsets ---
 	# Pitch: recoil (up) + landing (down) + flinch (random) + sprint lean
@@ -363,9 +367,11 @@ func take_damage(amount: float) -> void:
 	EventBus.player_health_changed.emit(current_hp, max_hp)
 	EventBus.player_damaged.emit(remaining)
 
-	# Camera flinch: random pitch + yaw
-	flinch_pitch_offset = deg_to_rad(randf_range(-damage_flinch_degrees, damage_flinch_degrees))
-	flinch_yaw_offset = deg_to_rad(randf_range(-damage_flinch_degrees * 0.5, damage_flinch_degrees * 0.5))
+	# Camera flinch: 2-4 degrees in random direction (3C §2: never less than 2°)
+	var flinch_mag := deg_to_rad(randf_range(2.0, 4.0))
+	var flinch_sign := 1.0 if randf() > 0.5 else -1.0
+	flinch_pitch_offset = flinch_mag * flinch_sign
+	flinch_yaw_offset = deg_to_rad(randf_range(-2.0, 2.0))
 
 	# Damage roll: ±2 degrees
 	damage_roll_offset = deg_to_rad(randf_range(-damage_roll_degrees, damage_roll_degrees))

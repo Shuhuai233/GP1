@@ -51,10 +51,11 @@ func _on_player_died() -> void:
 	# Show recap per GDD §8
 	var recap: Dictionary = wave_manager.get_recap_data()
 	game_over_label.text = "YOU DIED"
-	recap_label.text = "Waves survived: %d\nEnemies killed: %d\nCards collected: %d" % [
+	recap_label.text = "Waves survived: %d\nEnemies killed: %d\nCards collected: %d\nHighest combo: %.0f dmg" % [
 		recap["waves_survived"],
 		recap["enemies_killed"],
 		recap["cards_collected"],
+		recap["highest_combo"],
 	]
 	$GameOverUI.visible = true
 	restart_button.visible = true
@@ -75,7 +76,7 @@ func _on_wave_cleared(wave_number: int) -> void:
 	wave_label.modulate.a = 1.0
 	wave_label.text = "WAVE %d CLEARED" % wave_number
 	var tween := create_tween()
-	tween.tween_interval(2.5)
+	tween.tween_interval(3.0)  # Hold full 3s per GDD §8
 	tween.tween_property(wave_label, "modulate:a", 0.0, 0.5)
 
 

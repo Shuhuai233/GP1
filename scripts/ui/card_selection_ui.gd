@@ -20,7 +20,12 @@ func _on_selection_started(cards: Array) -> void:
 	_build_card_buttons()
 	panel.visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	# GDD §11: player CAN still look around but CANNOT fire or move.
+	# Set tree paused but give the player node PROCESS_MODE_ALWAYS so _input still runs.
 	get_tree().paused = true
+	var player := get_tree().get_first_node_in_group("player")
+	if player:
+		player.process_mode = Node.PROCESS_MODE_ALWAYS
 
 
 func _build_card_buttons() -> void:
@@ -103,5 +108,9 @@ func _get_card_description(card: CardData) -> String:
 func _on_card_picked(card: CardData) -> void:
 	panel.visible = false
 	get_tree().paused = false
+	# Restore player to default process mode
+	var player := get_tree().get_first_node_in_group("player")
+	if player:
+		player.process_mode = Node.PROCESS_MODE_INHERIT
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	EventBus.card_selected.emit(card)

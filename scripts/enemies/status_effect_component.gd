@@ -45,7 +45,8 @@ func apply_burn() -> void:
 	if not is_burning:
 		is_burning = true
 		burn_particles.emitting = true
-		burn_changed.emit(true)
+	# Always emit signal so UI/audio can react to refresh
+	burn_changed.emit(true)
 
 
 func detonate_poison() -> int:
