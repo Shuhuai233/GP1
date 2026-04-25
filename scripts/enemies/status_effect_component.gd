@@ -8,7 +8,6 @@ signal poison_changed(stacks: int)
 signal burn_changed(is_burning: bool)
 signal poison_detonated(stacks: int, bonus_damage: float)
 
-@onready var stack_label: Label3D = $StackLabel
 @onready var burn_particles: GPUParticles3D = $BurnParticles
 @onready var poison_glow: OmniLight3D = $PoisonGlow
 
@@ -21,13 +20,11 @@ const BURN_DAMAGE_MULTIPLIER: float = 1.2  # +20% damage
 
 
 func _ready() -> void:
-	stack_label.visible = false
 	burn_particles.emitting = false
 	poison_glow.visible = false
 
 
 func _process(delta: float) -> void:
-	# Burn countdown
 	if is_burning:
 		burn_timer -= delta
 		if burn_timer <= 0.0:
@@ -35,18 +32,10 @@ func _process(delta: float) -> void:
 			burn_particles.emitting = false
 			burn_changed.emit(false)
 
-	# Billboard the stack label toward camera
-	if stack_label.visible:
-		var cam := get_viewport().get_camera_3d()
-		if cam:
-			stack_label.global_transform = stack_label.global_transform.looking_at(
-				cam.global_position, Vector3.UP
-			)
-
 
 func apply_poison(stacks: int) -> void:
 	poison_stacks += stacks
-	_update_poison_visual()
+	_update_poison_glow()
 	poison_changed.emit(poison_stacks)
 	EventBus.enemy_status_applied.emit(get_parent(), "poison", poison_stacks)
 
@@ -60,15 +49,15 @@ func apply_burn() -> void:
 
 
 func detonate_poison() -> int:
-	## Returns raw stack count consumed. Caller handles damage calculation and EventBus.
+	## Returns raw stack count consumed. Caller handles damage + EventBus.
 	if poison_stacks <= 0:
 		return 0
 
 	var stacks := poison_stacks
 	poison_stacks = 0
-	_update_poison_visual()
+	_update_poison_glow()
 	poison_changed.emit(0)
-	poison_detonated.emit(stacks, 0.0)  # bonus_damage handled by caller
+	poison_detonated.emit(stacks, 0.0)
 	return stacks
 
 
@@ -76,13 +65,10 @@ func get_damage_multiplier() -> float:
 	return BURN_DAMAGE_MULTIPLIER if is_burning else 1.0
 
 
-func _update_poison_visual() -> void:
+func _update_poison_glow() -> void:
 	if poison_stacks > 0:
-		stack_label.visible = true
-		stack_label.text = str(poison_stacks)
 		poison_glow.visible = true
-		# Scale glow intensity with stacks (capped at 20 for visual sanity)
-		poison_glow.light_energy = clampf(float(poison_stacks) / 10.0, 0.2, 2.0)
+		poison_glow.light_energy = clampf(float(poison_stacks) * 0.3, 0.5, 4.0)
+		poison_glow.omni_range = clampf(float(poison_stacks) * 0.4, 3.0, 7.0)
 	else:
-		stack_label.visible = false
 		poison_glow.visible = false

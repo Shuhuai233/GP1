@@ -6,7 +6,7 @@ extends Node3D
 
 enum State { IDLE, FIRING, RELOADING }
 
-@export var fire_rate: float = 2.0
+@export var fire_rate: float = 3.0
 @export var reload_time: float = 2.0
 @export var max_ray_distance: float = 100.0
 

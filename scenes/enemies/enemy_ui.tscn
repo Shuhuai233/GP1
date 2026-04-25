@@ -1,0 +1,61 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_ui.gd" id="1"]
+
+[sub_resource type="BoxMesh" id="hp_bg_mesh"]
+size = Vector3(1.2, 0.1, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="hp_bg_mat"]
+albedo_color = Color(0.15, 0.15, 0.15, 1)
+shading_mode = 2
+
+[sub_resource type="BoxMesh" id="hp_fill_mesh"]
+size = Vector3(1.2, 0.09, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="hp_fill_mat"]
+albedo_color = Color(0.9, 0.1, 0.1, 1)
+emission_enabled = true
+emission = Color(0.9, 0.1, 0.1, 1)
+emission_energy_multiplier = 1.5
+shading_mode = 2
+
+[node name="EnemyUI" type="Node3D"]
+script = ExtResource("1")
+
+[node name="HPBarBG" type="MeshInstance3D" parent="."]
+mesh = SubResource("hp_bg_mesh")
+surface_material_override/0 = SubResource("hp_bg_mat")
+
+[node name="HPBarFill" type="MeshInstance3D" parent="."]
+mesh = SubResource("hp_fill_mesh")
+surface_material_override/0 = SubResource("hp_fill_mat")
+
+[node name="PoisonLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.18, 0)
+pixel_size = 0.005
+billboard = 1
+font_size = 36
+text = "☠ 0"
+modulate = Color(0.1, 1.0, 0.1, 1)
+outline_size = 8
+outline_modulate = Color(0, 0, 0, 1)
+
+[node name="BurnLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 0.18, 0)
+pixel_size = 0.005
+billboard = 1
+font_size = 30
+text = "🔥BURN"
+modulate = Color(1.0, 0.5, 0.0, 1)
+outline_size = 6
+outline_modulate = Color(0, 0, 0, 1)
+
+[node name="ComboLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0)
+pixel_size = 0.005
+billboard = 1
+font_size = 36
+text = "TOXIC FIRE"
+modulate = Color(0.6, 1.0, 0.1, 1)
+outline_size = 8
+outline_modulate = Color(0, 0, 0, 1)
