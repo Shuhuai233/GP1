@@ -36,11 +36,11 @@ PC (Steam). Godot 4.x. Part-time solo dev.
 |---|---|---|
 | Slay the Spire | Deckbuilding, synergy discovery, pick-1-from-3 | Real-time FPS combat, not turn-based |
 | DOOM Eternal | Fast shooting, two-hand abilities | Cards as ammo, deckbuilding progression |
-| Vampire Crawlers | First-person, cards, PS1 aesthetic | Real-time aiming (not turn-based), deeper synergies |
+| Vampire Crawlers | First-person, cards, roguelite | Real-time aiming (not turn-based), deeper synergies |
 | Gunfire Reborn | FPS roguelite | Cards are active bullet effects, not passive scrolls |
 
 ## Visual Style
-PSX / PS1 retro aesthetic. Low-poly, dithered, atmospheric.
+TBD — no visual style decided yet. Focus is on gameplay mechanics first.
 
 ## Session Length
 5-15 minutes per run. High replayability through card combinations.

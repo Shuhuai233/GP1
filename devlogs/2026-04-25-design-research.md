@@ -203,7 +203,7 @@ Once you find the dominant strategy, variety disappears.
 |---|---|---|---|---|
 | Combat | Turn-based | Turn-based | Turn-based | **Real-time FPS** |
 | Perspective | 2D side | 2D side | First-person | **First-person** |
-| Aesthetic | Hand-drawn | Hand-drawn | PS1/retro | **PSX/retro** |
+| Aesthetic | Hand-drawn | Hand-drawn | PS1/retro | **TBD** |
 | Card mechanic | Play from hand | Play from hand | Play from hand | **Cards ARE your ammo** |
 | Synergy type | Enabler/Payoff/Multiplier | Same + Spells | VS-style evolution combos | **Status combos + stack-execute** |
 | Skill expression | Strategic choices | Strategic choices | Minimal (play all) | **Aiming + target selection** |
