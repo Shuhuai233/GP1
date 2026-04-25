@@ -60,7 +60,7 @@ Spells auto-advance: after using a spell, the next unconsumed spell becomes acti
 
 | Stat | Value |
 |---|---|
-| Fire rate | ~2 shots/sec (semi-auto, click per shot) |
+| Fire rate | ~3 shots/sec (semi-auto, click per shot) |
 | Magazine | 6 card packs |
 | Bullets per pack | 6 (except Detonator: see spell) |
 | Reload time | 2 seconds |
@@ -162,27 +162,52 @@ On first shuffle: 6 firing → gun, 3 function → spell hand. Perfect fit.
 
 | Enemy | HP | Speed | Range | Damage | Behavior | Visual |
 |---|---|---|---|---|---|---|
-| Grunt | 30 | Medium | 10-15m | 3/shot, ~1/sec | Walks toward player, shoots. Visible projectiles. | Dark red capsule + gun mesh |
-| Big Eye | 100 | Slow | 20-30m | 20 charged beam (telegraphed) | Stands back, fires beam. Weak spot = eye. | Large purple sphere (1.5m), pulsing eye, floats 0.5m |
-| Rusher | 20 | 9 m/s | 0-5m | 10 melee, ~1/sec | Sprints at player, melee. | Small/wide bright orange, leaning forward |
+| Grunt | 30 | Medium | 10-15m | 3/shot, ~1/sec | Walks toward player, shoots visible projectiles. Projectile speed: 15 m/s (dodgeable). | Dark red capsule + gun mesh |
+| Big Eye | 100 | Slow | 20-30m | 20 charged beam (telegraphed) | Stands back, 1.5 sec charge-up (visible glow), fires beam projectile. Beam speed: 20 m/s. Weak spot = eye. | Large purple sphere (1.5m), pulsing eye, floats 0.5m |
+| Rusher | 20 | 9 m/s | 0-5m | 10 melee, ~1/sec | Sprints at player, melee attack with visible wind-up (0.5 sec). | Small/wide bright orange, leaning forward |
 
-### Enemy requirements
+### Enemy projectile requirements
+- **ALL enemy ranged attacks must be visible projectiles** (not hitscan)
+- Grunt: fires a glowing red bullet, visible in flight, 15 m/s speed (player can strafe to dodge)
+- Big Eye: fires a large purple beam projectile, 20 m/s, with 1.5 sec charge-up telegraph (glowing eye + audio cue)
+- Projectiles must have distinct color from player card colors (enemy = red/dark tones, player = card colors)
+- Projectile size: large enough to see at 20-30m distance
+
+### Enemy attack speed note
+Enemy projectiles should be SLOW enough that an aware player can dodge by strafing. This rewards movement skill and creates a "bullet hell lite" feel at higher wave counts.
+
+### Other enemy requirements
 - All enemies have floating HP bars (visible after taking damage)
-- All enemy projectiles/attacks must be clearly visible to the player
 - Status effects (poison glow, burn flames) must be large and obvious on enemies
 
 ---
 
 ## 8. WAVES & STRUCTURE
 
+### Endless wave loop
+Waves continue indefinitely until the player dies. No fixed end point. Each wave gets progressively harder (more enemies, tougher compositions). Card selection between every wave gives the player a growing deck.
+
+### Wave scaling
 | Wave | Enemies | Purpose |
 |---|---|---|
 | 1 | 3 Grunts | Learn to shoot, experience card transitions |
 | 2 | 2 Grunts + 1 Big Eye | Stack poison on sponge, test Detonator timing |
-| 3 | 1 Big Eye + 4 Rushers + 2 Grunts | Pressure test, everything at once |
+| 3 | 1 Big Eye + 4 Rushers + 2 Grunts | Pressure test, all enemy types |
+| 4+ | Scaling: +1-2 enemies per wave, mix of all types | Increasing difficulty, deck must grow to keep up |
 
-### Between waves
-1. "WAVE CLEARED" text (3 sec)
+### Scaling rules (wave 4+)
+- Each wave adds 1-2 more enemies than the previous
+- Enemy HP scales +10% per wave after wave 3
+- Enemy composition randomizes from all 3 types
+- Player deck grows by 1 card per wave (picks between every wave)
+
+### Death = run over
+- Player dies → death recap screen (waves survived, enemies killed, cards collected, highest combo)
+- Restart from wave 1 with starter deck
+- Goal: survive as many waves as possible, build the strongest deck you can
+
+### Between EVERY wave
+1. "WAVE X CLEARED" text (3 sec)
 2. Breathing room — see HP, deck state (3 sec)
 3. Card selection: pick 1 from 3 (mixed firing + function pool). Card type (gun/spell icon) shown.
 4. Heal 25 HP
@@ -193,7 +218,7 @@ On first shuffle: 6 firing → gun, 3 function → spell hand. Perfect fit.
 - Never offer Standard Round
 - Show card type icon (gun or spell) clearly
 - Show current deck composition during selection
-- Deck grows: wave 2 = 10 cards, wave 3 = 11 cards
+- Deck grows by 1 every wave (wave 2 = 10, wave 3 = 11, wave 10 = 18, etc.)
 
 ---
 
@@ -304,7 +329,9 @@ These are designed or discussed but NOT built yet:
 3. Does Venom stack → Detonator burst produce a satisfying 叠层后斩杀 moment?
 4. Does Toxic Fire (Poison + Burn + Detonator) feel like a genuine "1+1>2" discovery?
 5. Does reload-as-sacrifice feel like a real decision?
-6. Does the player want to play again immediately?
+6. Can the player dodge enemy projectiles through movement? (Are projectiles visible and slow enough?)
+7. Does the endless wave loop create "one more wave" motivation?
+8. Does the player want to play again immediately after dying?
 
 ---
 

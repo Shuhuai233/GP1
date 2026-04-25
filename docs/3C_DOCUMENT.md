@@ -159,11 +159,11 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 
 **Firing behavior:**
 - Semi-automatic: player must click for each shot (no full-auto hold)
-- Fire rate cap: ~2 shots/sec (0.5s between shots minimum)
+- Fire rate cap: ~3 shots/sec (0.33s between shots minimum)
 - Raycast from camera center (hitscan, not projectile for Gate 1)
 - Bullet spread: none while standing still. Minimal spread while moving (+1 degree). No spread while ADS.
 
-**Why semi-auto, not full-auto:** The revolver fires deliberately. Each shot has weight. At 2/sec, the player has ~0.5s between clicks to glance at the crosshair color if they want. This supports card-mode awareness. Full-auto hold would encourage spray-without-thinking.
+**Why semi-auto, not full-auto:** The revolver fires deliberately. Each shot has weight. At 3/sec, the player has ~0.33s between clicks. This is fast enough to feel punchy while still supporting card-mode awareness.
 
 **ADS (Aim Down Sights):**
 
@@ -292,7 +292,7 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 | Sprint speed | 8 m/s | 6-10 m/s |
 | Jump height | ~1.2m | 0.8-1.5m |
 | Gravity | 20 m/s² | 15-25 m/s² |
-| Fire rate | 2 shots/sec | 1.5-3 shots/sec |
+| Fire rate | 3 shots/sec | 2-4 shots/sec |
 | Recoil kick | 3.0 degrees | 1.5-4 degrees |
 | ADS FOV | 75 | 65-80 |
 | ADS transition time | 0.1s | 0.08-0.2s |
