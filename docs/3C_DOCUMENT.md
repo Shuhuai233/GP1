@@ -25,9 +25,11 @@ The 3C should feel **responsive and modern** — closer to DOOM Eternal / Hades 
 - Eye height: 1.6m from ground
 
 ### Health
-- HP: 100
+- HP: 150
 - No passive regeneration for Gate 1
 - No armor / shield system for Gate 1
+- Heal on kill: 10 HP per enemy killed
+- Between-wave heal: 25 HP flat
 - Death = run over (restart from wave 1)
 
 ### Damage feedback
@@ -54,7 +56,7 @@ The 3C should feel **responsive and modern** — closer to DOOM Eternal / Hades 
 
 ### Rotation model
 - **Horizontal rotation (yaw):** applied to the CHARACTER body (CharacterBody3D rotates on Y-axis). Mouse X input → body Y rotation.
-- **Vertical rotation (pitch):** applied to the CAMERA node only (camera rotates on local X-axis). Mouse X input → camera X rotation.
+- **Vertical rotation (pitch):** applied to the CAMERA node only (camera rotates on local X-axis). Mouse **Y** input → camera X rotation.
 - **Roll (Z-axis):** NO persistent roll. Camera always returns to level. Brief roll effects allowed (see below).
 - Rotation is Euler-based (pitch + yaw). No quaternion slerp needed for first-person.
 - Rotation is applied IMMEDIATELY from mouse input — no interpolation, no smoothing, no lerp. Raw input → raw rotation. Any delay = nausea.
@@ -79,19 +81,19 @@ All roll effects are BRIEF and SMALL. Camera always returns to 0 roll. These are
 | Recoil | 0 (no roll on fire) | — | — |
 
 ### Camera effects (subtle — must not interfere with card color reading)
-- **Recoil kick:** 1-2 degree upward pitch per shot, recovers over 0.2s. Revolver at 2/sec means the camera has a gentle rhythmic bounce.
+- **Recoil kick:** 3 degree upward pitch per shot, recovers over 0.15s. Revolver at 2/sec means the camera has a rhythmic punch.
 - **Landing impact:** small downward pitch (3-5 degrees) on landing from height >1m, recovers in 0.2s. No effect for small drops.
 - **Sprint tilt:** very subtle forward lean (1-2 degrees pitch down) while sprinting. Interpolated over 0.3s. Returns on stop.
 - **Damage flinch:** random pitch kick (2-4 degrees in random direction), recovers in 0.15s. Brief — player must return to reading card colors quickly.
-- **NO screen shake for Gate 1.** Screen shake competes with card color readability. Add later if needed.
+- **NO screen shake for Gate 1 by default.** Try small shake (0.5-1 degree, 0.05s) during playtesting. Revert if it hurts card color readability.
 - **NO chromatic aberration, NO motion blur.** These smear the color language.
 
 ### Camera state transitions
 
 | From → To | Behavior |
 |---|---|
-| Hip → ADS | FOV 90→75 over 0.15s (linear interpolation). Camera position unchanged. |
-| ADS → Hip | FOV 75→90 over 0.15s. |
+| Hip → ADS | FOV 90→75 over 0.1s (linear interpolation). Camera position unchanged. |
+| ADS → Hip | FOV 75→90 over 0.1s. |
 | Standing → Crouch | Camera Y position 1.6m→1.0m over 0.15s (smooth). |
 | Crouch → Standing | Camera Y position 1.0m→1.6m over 0.15s. Check headroom first — cancel if blocked. |
 | Alive → Death | Camera drops to ground (physics-driven fall or scripted Y interpolation to 0.3m over 0.5s). Pitch tilts to ~30 degrees. Slight random roll (±10 degrees). Freeze at final position. No ragdoll cam for Gate 1. |
@@ -129,12 +131,13 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 | Walk speed | 5 m/s | Standard FPS pace |
 | Sprint speed | 8 m/s | 60% faster, forward-only |
 | Crouch speed | 3 m/s | Slower, behind cover |
-| Jump impulse | 5 m/s upward | ~1.25m max jump height |
+| Jump impulse | 7 m/s upward | ~1.2m max jump height |
 | Gravity | 20 m/s² | Slightly heavier than real (9.8). Snappy landings. |
-| Air control | 30% of ground speed | Can adjust mid-air but not full strafe |
-| Acceleration (ground) | 50 m/s² | Near-instant. Responsive, not floaty. |
-| Deceleration (ground) | 50 m/s² | Stop fast. No ice-skating. |
-| Acceleration (air) | 15 m/s² | Slower air control, committed jumps |
+| Air control | 60% of ground speed | Can adjust mid-air, reasonable strafe |
+| Acceleration (ground) | 80 m/s² | Near-instant. Responsive, not floaty. |
+| Deceleration (ground) | 80 m/s² | Stop fast. No ice-skating. |
+| Acceleration (air) | 30 m/s² | Responsive air control |
+| Deceleration (air) | 20 m/s² | Stop reasonably fast in air |
 
 **Movement feel targets:**
 - Grounded, responsive, no float
@@ -168,7 +171,7 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 | ADS FOV | 75 (from 90) |
 | ADS move speed | 60% of walk speed (3 m/s) |
 | ADS spread | 0 (perfect accuracy) |
-| ADS transition | 0.15s (snappy) |
+| ADS transition | 0.1s (snappy) |
 | Can sprint while ADS | No |
 
 **Reload:**
@@ -214,11 +217,11 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 - **Card transition:** Subtle tonal shift when one card pack ends and next begins. Not a UI sound — a world sound. Like a chamber rotating to a different round type.
 
 ### Recoil pattern
-- Pure vertical kick: 1-2 degrees upward per shot
-- Recovery: returns to original aim point over 0.2s
+- Pure vertical kick: 3 degrees upward per shot
+- Recovery: returns to original aim point over 0.15s
 - No horizontal wander (revolver is stable)
-- Visual gun kick: weapon model kicks back slightly on fire, returns
-- At 2 shots/sec, the rhythm is: kick → recover → kick → recover. Metronomic. Satisfying.
+- Visual gun kick: weapon model kicks back on fire (translate Z +0.05 over 0.05s, return over 0.1s)
+- At 2 shots/sec, the rhythm is: kick → recover → kick → recover. Metronomic. Punchy.
 
 ### Muzzle flash
 - Color matches current card pack (white/green/orange/blue/purple)
@@ -269,7 +272,7 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 ## 7. IMPORTANT CONSTRAINTS
 
 1. **No head bob.** Interferes with card color reading at crosshair.
-2. **No screen shake on fire.** Interferes with card color reading.
+2. **No screen shake on fire by default.** Test small shake (0.5-1 deg, 0.05s). Revert if hurts readability.
 3. **No motion blur.** Smears the color language.
 4. **No chromatic aberration.** Smears the color language.
 5. **Semi-auto fire only.** Player must click per shot. Supports deliberate shooting.
@@ -284,12 +287,12 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 |---|---|---|
 | Walk speed | 5 m/s | 4-7 m/s |
 | Sprint speed | 8 m/s | 6-10 m/s |
-| Jump height | ~1.25m | 0.8-1.5m |
+| Jump height | ~1.2m | 0.8-1.5m |
 | Gravity | 20 m/s² | 15-25 m/s² |
 | Fire rate | 2 shots/sec | 1.5-3 shots/sec |
-| Recoil kick | 1.5 degrees | 0.5-3 degrees |
+| Recoil kick | 3.0 degrees | 1.5-4 degrees |
 | ADS FOV | 75 | 65-80 |
-| ADS transition time | 0.15s | 0.1-0.25s |
+| ADS transition time | 0.1s | 0.08-0.2s |
 | Reload time | 2s | 1.5-3s |
 | Mouse sensitivity | 0.002 rad/px | Player-configurable |
 | Coyote time | 0.1s | 0.05-0.15s |

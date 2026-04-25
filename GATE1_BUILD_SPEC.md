@@ -85,9 +85,11 @@ All packs = 6 bullets (~3 sec at 2/sec) except Detonator = 3 bullets (~1.5 sec).
 
 | Stat | Value |
 |---|---|
-| HP | 100 |
+| HP | 150 |
 | Movement | Walk + sprint + jump (standard FPS) |
 | Dash/dodge | None for Gate 1 |
+| Heal on kill | 10 HP per enemy killed |
+| Between-wave heal | 25 HP flat |
 
 ---
 
@@ -95,9 +97,9 @@ All packs = 6 bullets (~3 sec at 2/sec) except Detonator = 3 bullets (~1.5 sec).
 
 | Enemy | HP | Speed | Range | Damage | Behavior |
 |---|---|---|---|---|---|
-| Grunt | 30 | Medium | 10-15m | 5 dmg/shot, ~1/sec | Walks toward player, shoots |
-| Big Eye | 100 | Slow | 20-30m | 25 dmg charged beam (telegraphed) | Stands back, fires beam. Weak spot = eye |
-| Rusher | 20 | Fast | 0-5m | 15 dmg melee, ~1/sec | Sprints at player, melee |
+| Grunt | 30 | Medium | 10-15m | 3 dmg/shot, ~1/sec | Walks toward player, shoots |
+| Big Eye | 100 | Slow | 20-30m | 20 dmg charged beam (telegraphed) | Stands back, fires beam. Weak spot = eye |
+| Rusher | 20 | Fast | 0-5m | 10 dmg melee, ~1/sec | Sprints at player, melee |
 
 ---
 

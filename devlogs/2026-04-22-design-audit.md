@@ -8,7 +8,7 @@ The design has evolved significantly through conversation. Key shifts:
 2. **Fast pacing preserved.** SMG, rifle, shotgun all fire at real FPS speeds. Cards cycle every ~2 seconds regardless of weapon fire rate.
 3. **Diegetic visibility decided.** Screen-wide color language (muzzle flash, trails, crosshair tint, hit effects) communicates current card mode. No HUD reading during combat.
 4. **Cognitive science timing.** ~1.5-2.5 sec per card pack is backed by human visual processing data (color ID ~150ms, aim adjustment ~500ms, tactical choice ~1-2 sec).
-5. **No specific cards designed yet.** The 20 speculative cards from earlier brainstorming have been removed. Card archetypes, specific effects, and synergies are all TBD.
+5. **5 cards designed for Gate 1:** Standard, Venom, Incendiary, Piercing, Detonator. All 6 bullets/pack except Detonator (3).
 6. **4 weapons defined:** Revolver (6 cards, ~2/sec), Rifle (6 cards, ~5/sec), SMG (6 cards, ~8/sec), Shotgun (4 cards, ~1.5/sec).
 
 ---
@@ -145,7 +145,7 @@ If any of these are too hard to perceive or too slow to react to, the signature 
 
 Every prior attempt at real-time card combat has struggled with: "how does the player perceive card effects during fast action?" GP1's answer — cards are modes lasting ~2 seconds, communicated through screen-wide color shifts — is simple, intuitive, and trailer-ready.
 
-A GIF of gameplay would show: player spraying orange-tinted fire bullets → color shifts to green → poison bullets with green trails → color shifts to blue → shield burst → reload shuffle → new color sequence begins. A viewer understands the system in 5 seconds without any explanation.
+A GIF of gameplay would show: player spraying orange-tinted fire bullets → color shifts to green → poison bullets with green trails → color shifts to blue → piercing bullets pass through enemies → reload shuffle → new color sequence begins. A viewer understands the system in 5 seconds without any explanation.
 
 **This is stronger than the v1 hook.** "Your deck is your magazine" was a pitch. "Your gun cycles through color-coded card modes" is a visible, demonstrable mechanic.
 
