@@ -87,9 +87,9 @@ Spells auto-advance: after using a spell, the next unconsumed spell becomes acti
 
 | Card | Color | Effect | Consumed? | Role |
 |---|---|---|---|---|
-| Detonator | Purple | Fires a single projectile. On hit: consumes ALL poison stacks, bonus dmg = 3x stacks. Must aim and hit. | Yes | Payoff: Poison execute |
-| Barrier | Cyan | Grants 30 HP shield for 5 sec | Yes | Defensive |
-| Flashfire | Orange-Red | All enemies within 10m get Burn status | Yes | Setup: area Burn |
+| Detonator | Purple | Hitscan raycast (same as gun). On hit: consumes ALL poison stacks, bonus dmg = 3x stacks. Base damage = 0 (bonus only). Consumed on CAST (miss = wasted). Range = infinite (same as gun). Must aim and hit. | Yes | Payoff: Poison execute |
+| Barrier | Cyan | Grants 30 HP shield for 5 sec. Instant, no aiming required. | Yes | Defensive |
+| Flashfire | Orange-Red | All enemies within 10m get Burn status. Instant, no aiming required. | Yes | Setup: area Burn |
 
 ### Starter Deck (9 cards)
 - 3x Standard Round (firing)

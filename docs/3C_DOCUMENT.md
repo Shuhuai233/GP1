@@ -8,7 +8,7 @@
 
 GP1 is a first-person shooter where the player must be able to:
 1. **Move fluidly** — smooth, responsive, satisfying moment-to-moment
-2. **Aim precisely** — revolver rewards accuracy (Detonator has 3 bullets, can't waste them)
+2. **Aim precisely** — revolver rewards accuracy, Detonator spell requires hitting the target
 3. **Read card modes** — crosshair and screen center must be visually clear enough to notice color shifts
 4. **Make spatial decisions** — use cover, manage distance to enemies at different ranges (5m-30m)
 
@@ -153,8 +153,9 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 | Action | Key | Behavior |
 |---|---|---|
 | Fire | Left Mouse (hold or click) | Fires current card pack. Semi-auto feel at ~2/sec. |
-| Reload | R | Manual reload. 2 sec animation. Wastes remaining bullets in current pack. Reshuffles deck. |
+| Reload | R | Manual reload. 2 sec animation. Wastes remaining bullets in current pack. Reshuffles BOTH gun and spell hand. |
 | Aim (ADS) | Right Mouse (hold) | Slight zoom (FOV 90→75), tighter crosshair, slower move speed |
+| Cast Spell | F | Triggers the active function card in spell hand. Spells auto-advance (next unconsumed spell becomes active). |
 
 **Firing behavior:**
 - Semi-automatic: player must click for each shot (no full-auto hold)
@@ -235,9 +236,10 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 
 ### Design
 - Simple dot + circle reticle
-- Default size: small (encourages precision for Detonator shots)
-- **Entire crosshair tints to current card color** — this is the primary card-mode indicator
-- White = Standard, Green = Venom, Orange = Incendiary, Blue = Piercing, Purple = Detonator
+- Default size: small (encourages precision)
+- **Entire crosshair tints to current FIRING card color** — this is the primary card-mode indicator
+- White = Standard, Green = Venom, Orange = Incendiary, Blue = Piercing
+- Crosshair does NOT change for function cards (spells use left-hand UI, not crosshair)
 
 ### Crosshair states
 | State | Visual |
@@ -252,7 +254,8 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 - On hit: brief crosshair expansion + white tick marks (standard FPS hit marker)
 - On kill: crosshair flashes + larger X mark
 - On poison stack: green + number pops near crosshair
-- On Detonator execute: large purple burst from crosshair + screen flash
+- On Detonator spell hit: large purple burst from crosshair + screen flash + "BOOM" feedback
+- On Toxic Fire trigger: green-orange burst + "TOXIC FIRE" text popup
 
 ---
 
