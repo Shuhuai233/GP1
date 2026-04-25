@@ -168,7 +168,7 @@ func _on_enemy_killed(_enemy: Node3D) -> void:
 	_show_hit_marker(Color(1, 0.3, 0.3), 0.3)
 
 
-func _on_poison_detonated(_enemy: Node3D, _stacks: int, _bonus: float) -> void:
+func _on_poison_detonated(_enemy: Node3D, _stacks: int, _bonus: float, _toxic_fire: bool) -> void:
 	_show_hit_marker(Color(0.7, 0.2, 1.0), 0.5)
 
 

@@ -1,11 +1,11 @@
 ## BigEye — Slow, long-range, charged beam attack with telegraph
-## HP: 100, Speed: Slow, Range: 20-30m, Damage: 25 charged beam (telegraphed)
+## HP: 100, Speed: Slow, Range: 20-30m, Damage: 20 charged beam (telegraphed)
 extends EnemyBase
 
 enum BigEyeState { IDLE, CHARGING, FIRING, COOLDOWN }
 
 @export var charge_time: float = 2.0
-@export var beam_damage: float = 25.0
+@export var beam_damage: float = 20.0
 @export var fire_cooldown: float = 3.0
 
 var eye_state: BigEyeState = BigEyeState.IDLE

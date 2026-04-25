@@ -1,5 +1,5 @@
 ## Grunt — Medium speed, ranged attack, walks toward player and shoots
-## HP: 30, Speed: Medium, Range: 10-15m, Damage: 5/shot at ~1/sec
+## HP: 30, Speed: Medium, Range: 10-15m, Damage: 3/shot at ~1/sec
 extends EnemyBase
 
 const PREFERRED_RANGE_MIN: float = 10.0
@@ -11,7 +11,7 @@ var _bullet_scene: PackedScene  # placeholder for future projectile
 func _ready() -> void:
 	max_hp = 30.0
 	move_speed = 3.5
-	attack_damage = 5.0
+	attack_damage = 3.0
 	attack_range = 15.0
 	attack_cooldown = 1.0
 	super._ready()

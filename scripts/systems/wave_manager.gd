@@ -1,12 +1,12 @@
 ## WaveManager — Spawns enemies in waves, detects wave clear, triggers card selection
-## Wave 1: 3 Grunts
-## Wave 2: 2 Grunts + 1 Big Eye
-## Wave 3: 1 Big Eye + 4 Rushers + 2 Grunts
+## Between-wave flow per GDD §8: cleared text → breathing room → card pick → 25 HP heal → countdown
 extends Node
 
 @export var grunt_scene: PackedScene
 @export var rusher_scene: PackedScene
 @export var big_eye_scene: PackedScene
+
+const BETWEEN_WAVE_HEAL: float = 25.0
 
 var spawn_points: Array[Marker3D] = []
 var player: Node3D = null
@@ -17,17 +17,28 @@ var total_waves: int = 3
 var enemies_alive: int = 0
 var is_active: bool = false
 
-# Wave definitions: array of {type: String, count: int}
 var wave_defs: Array[Array] = [
 	[["grunt", 3]],
 	[["grunt", 2], ["big_eye", 1]],
 	[["big_eye", 1], ["rusher", 4], ["grunt", 2]],
 ]
 
+# Card pool for between-wave offers — no Standard Round per GDD §8
+var _offer_pool: Array[CardData]
+
 
 func _ready() -> void:
 	EventBus.enemy_died.connect(_on_enemy_died)
 	EventBus.card_selected.connect(_on_card_selected)
+
+	_offer_pool = [
+		preload("res://data/cards/venom_round.tres"),
+		preload("res://data/cards/incendiary_round.tres"),
+		preload("res://data/cards/piercing_round.tres"),
+		preload("res://data/cards/detonator_round.tres"),
+		preload("res://data/cards/barrier.tres"),
+		preload("res://data/cards/flashfire.tres"),
+	]
 
 
 func initialize(p_player: Node3D, p_spawn_points: Array[Marker3D], p_enemy_container: Node3D) -> void:
@@ -67,8 +78,8 @@ func start_next_wave() -> void:
 func _spawn_enemy(type: String, spawn: Marker3D) -> EnemyBase:
 	var scene: PackedScene
 	match type:
-		"grunt": scene = grunt_scene
-		"rusher": scene = rusher_scene
+		"grunt":   scene = grunt_scene
+		"rusher":  scene = rusher_scene
 		"big_eye": scene = big_eye_scene
 		_:
 			push_error("Unknown enemy type: " + type)
@@ -96,25 +107,35 @@ func _wave_cleared() -> void:
 	if current_wave >= total_waves:
 		EventBus.all_waves_cleared.emit()
 	else:
-		# Trigger card selection before next wave
-		_offer_card_selection()
+		_begin_between_wave_flow()
+
+
+func _begin_between_wave_flow() -> void:
+	# Step 1: WAVE CLEARED text shown (handled by main.gd via signal)
+	# Step 2: 3s breathing room
+	await get_tree().create_timer(3.0).timeout
+
+	# Step 3: Card selection (never offer Standard Round)
+	_offer_card_selection()
 
 
 func _offer_card_selection() -> void:
-	# Pick 3 random cards to offer
-	var all_cards: Array[CardData] = [
-		preload("res://data/cards/standard_round.tres"),
-		preload("res://data/cards/venom_round.tres"),
-		preload("res://data/cards/incendiary_round.tres"),
-		preload("res://data/cards/piercing_round.tres"),
-		preload("res://data/cards/detonator_round.tres"),
-	]
-	all_cards.shuffle()
-	var offered: Array = all_cards.slice(0, 3)
+	var pool := _offer_pool.duplicate()
+	pool.shuffle()
+	var offered: Array = []
+	for card in pool:
+		offered.append(card)
+		if offered.size() >= 3:
+			break
 	EventBus.card_selection_started.emit(offered)
 
 
 func _on_card_selected(_card: Resource) -> void:
-	# Wait a moment then start next wave
-	await get_tree().create_timer(1.0).timeout
+	# Step 4: Heal 25 HP
+	if player and player.has_method("heal"):
+		player.heal(BETWEEN_WAVE_HEAL)
+	EventBus.between_wave_heal.emit(BETWEEN_WAVE_HEAL)
+
+	# Step 5: 3s countdown then next wave
+	await get_tree().create_timer(3.0).timeout
 	start_next_wave()

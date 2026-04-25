@@ -59,18 +59,17 @@ func apply_burn() -> void:
 		burn_changed.emit(true)
 
 
-func detonate_poison() -> float:
+func detonate_poison() -> int:
+	## Returns raw stack count consumed. Caller handles damage calculation and EventBus.
 	if poison_stacks <= 0:
-		return 0.0
+		return 0
 
 	var stacks := poison_stacks
-	var bonus := stacks * 3.0  # 3x multiplier per spec
 	poison_stacks = 0
 	_update_poison_visual()
 	poison_changed.emit(0)
-	poison_detonated.emit(stacks, bonus)
-	EventBus.enemy_poison_detonated.emit(get_parent(), stacks, bonus)
-	return bonus
+	poison_detonated.emit(stacks, 0.0)  # bonus_damage handled by caller
+	return stacks
 
 
 func get_damage_multiplier() -> float:

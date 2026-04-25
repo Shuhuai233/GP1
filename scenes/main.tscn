@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/grunt.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/rusher.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/big_eye.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/ui/spell_hand_ui.tscn" id="11"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1")
@@ -28,6 +29,8 @@ rusher_scene = ExtResource("9")
 big_eye_scene = ExtResource("10")
 
 [node name="PlayerHUD" parent="." instance=ExtResource("5")]
+
+[node name="SpellHandUI" parent="." instance=ExtResource("11")]
 
 [node name="CardSelectionUI" parent="." instance=ExtResource("6")]
 

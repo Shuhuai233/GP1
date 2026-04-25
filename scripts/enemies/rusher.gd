@@ -1,5 +1,5 @@
 ## Rusher — Fast, melee, sprints at player
-## HP: 20, Speed: Fast, Range: 0-5m, Damage: 15 melee at ~1/sec
+## HP: 20, Speed: 9 m/s, Range: 0-5m, Damage: 10 melee at ~1/sec
 extends EnemyBase
 
 const MELEE_RANGE: float = 2.5
@@ -7,8 +7,8 @@ const MELEE_RANGE: float = 2.5
 
 func _ready() -> void:
 	max_hp = 20.0
-	move_speed = 7.0
-	attack_damage = 15.0
+	move_speed = 9.0
+	attack_damage = 10.0
 	attack_range = 5.0
 	attack_cooldown = 1.0
 	super._ready()

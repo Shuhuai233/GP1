@@ -8,37 +8,38 @@ extends CharacterBody3D
 @export var walk_speed: float = 5.0
 @export var sprint_speed: float = 8.0
 @export var crouch_speed: float = 3.0
-@export var jump_velocity: float = 5.0
+@export var jump_velocity: float = 7.0
 @export var mouse_sensitivity: float = 0.002
 
 @export_group("Acceleration")
-@export var ground_accel: float = 50.0
-@export var ground_decel: float = 50.0
-@export var air_accel: float = 15.0
-@export var air_decel: float = 5.0  # Low decel preserves momentum for "committed jumps"
-@export var air_control_factor: float = 0.3
+@export var ground_accel: float = 80.0
+@export var ground_decel: float = 80.0
+@export var air_accel: float = 30.0
+@export var air_decel: float = 20.0
+@export var air_control_factor: float = 0.6
 
 @export_group("Jump Assist")
 @export var coyote_time: float = 0.1
 @export var jump_buffer_time: float = 0.1
 
 @export_group("Health")
-@export var max_hp: float = 100.0
+@export var max_hp: float = 150.0
+@export var heal_on_kill: float = 10.0
 
 @export_group("Camera")
 @export var default_fov: float = 90.0
 @export var ads_fov: float = 75.0
-@export var ads_transition_speed: float = 1.0 / 0.15  # 0.15s transition
+@export var ads_transition_speed: float = 10.0  # 1/0.1s = 0.1s transition per GDD
 @export var ads_move_multiplier: float = 0.6
 
 @export_group("Camera Effects")
-@export var recoil_kick_degrees: float = 1.5
-@export var recoil_recovery_time: float = 0.2
+@export var recoil_kick_degrees: float = 3.0
+@export var recoil_recovery_time: float = 0.15
 @export var landing_kick_degrees: float = 4.0
 @export var landing_recovery_time: float = 0.2
 @export var sprint_tilt_degrees: float = 1.5
 @export var sprint_tilt_transition_time: float = 0.3
-@export var strafe_roll_degrees: float = 2.0
+@export var strafe_roll_degrees: float = 1.5
 @export var strafe_roll_speed: float = 8.0
 @export var damage_flinch_degrees: float = 3.0
 @export var damage_flinch_recovery: float = 0.15
@@ -94,6 +95,7 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _ready() -> void:
 	current_hp = max_hp
+	add_to_group("player")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 	camera.fov = default_fov
@@ -109,6 +111,11 @@ func _ready() -> void:
 
 	EventBus.player_health_changed.emit(current_hp, max_hp)
 	EventBus.weapon_fired.connect(_on_weapon_fired)
+	EventBus.enemy_died.connect(_on_enemy_killed)
+
+
+func _on_enemy_killed(_enemy: Node3D) -> void:
+	heal(heal_on_kill)
 
 
 func _input(event: InputEvent) -> void:
@@ -343,9 +350,18 @@ func _on_weapon_fired(_card: Resource) -> void:
 func take_damage(amount: float) -> void:
 	if is_dead:
 		return
-	current_hp = maxf(current_hp - amount, 0.0)
+
+	# Route through shield absorption (Barrier spell)
+	var remaining := amount
+	if weapon and weapon.has_method("absorb_damage"):
+		remaining = weapon.absorb_damage(amount)
+
+	if remaining <= 0:
+		return
+
+	current_hp = maxf(current_hp - remaining, 0.0)
 	EventBus.player_health_changed.emit(current_hp, max_hp)
-	EventBus.player_damaged.emit(amount)
+	EventBus.player_damaged.emit(remaining)
 
 	# Camera flinch: random pitch + yaw
 	flinch_pitch_offset = deg_to_rad(randf_range(-damage_flinch_degrees, damage_flinch_degrees))

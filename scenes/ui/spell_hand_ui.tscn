@@ -1,0 +1,186 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/spell_hand_ui.gd" id="1"]
+
+[node name="SpellHandUI" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1")
+
+[node name="SlotContainer" type="VBoxContainer" parent="."]
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -110.0
+offset_right = 80.0
+offset_bottom = 110.0
+grow_vertical = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="Slot1" type="Control" parent="SlotContainer"]
+custom_minimum_size = Vector2(60, 60)
+mouse_filter = 2
+
+[node name="Frame" type="Panel" parent="SlotContainer/Slot1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Icon" type="ColorRect" parent="SlotContainer/Slot1"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -18.0
+offset_top = -18.0
+offset_right = 18.0
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.7, 0.2, 1, 1)
+
+[node name="CardLabel" type="Label" parent="SlotContainer/Slot1"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -18.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+text = "DET"
+horizontal_alignment = 1
+
+[node name="Slot2" type="Control" parent="SlotContainer"]
+custom_minimum_size = Vector2(60, 60)
+mouse_filter = 2
+
+[node name="Frame" type="Panel" parent="SlotContainer/Slot2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Icon" type="ColorRect" parent="SlotContainer/Slot2"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -18.0
+offset_top = -18.0
+offset_right = 18.0
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0.9, 0.9, 1)
+
+[node name="CardLabel" type="Label" parent="SlotContainer/Slot2"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -18.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+text = "BAR"
+horizontal_alignment = 1
+
+[node name="Slot3" type="Control" parent="SlotContainer"]
+custom_minimum_size = Vector2(60, 60)
+mouse_filter = 2
+
+[node name="Frame" type="Panel" parent="SlotContainer/Slot3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Icon" type="ColorRect" parent="SlotContainer/Slot3"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -18.0
+offset_top = -18.0
+offset_right = 18.0
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.3, 0, 1)
+
+[node name="CardLabel" type="Label" parent="SlotContainer/Slot3"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -18.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+text = "FLR"
+horizontal_alignment = 1
+
+[node name="ShieldBar" type="ProgressBar" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -35.0
+offset_right = 100.0
+offset_bottom = -25.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+max_value = 30.0
+value = 0.0
+show_percentage = false
+
+[node name="ToxicFireLabel" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = -70.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 22
+text = "TOXIC FIRE!"
+horizontal_alignment = 1
+modulate = Color(0.4, 1, 0, 0)
