@@ -180,6 +180,55 @@ Enemy projectiles should be SLOW enough that an aware player can dodge by strafi
 - All enemies have floating HP bars (visible after taking damage)
 - Status effects (poison glow, burn flames) must be large and obvious on enemies
 
+### Enemy UI — Floating Display (above each enemy)
+
+Every enemy must have a billboard UI display floating above their head. This is critical for players to make informed card decisions (e.g., "that enemy has high poison stacks, I should Detonator it").
+
+**Health bar:**
+- Position: 0.3m above enemy top
+- Width: 1.2m (world space), height: 0.1m
+- Background: dark gray (0.2, 0.2, 0.2)
+- Fill: red, scales with HP percentage (left to right)
+- Hidden at full HP. Appears after first damage taken.
+- Always faces camera (billboard)
+
+**Poison stack display:**
+- Position: above HP bar, left side
+- Green number showing current stack count (e.g., "12")
+- Font: large, bold, black outline for readability at distance
+- Green poison icon (circle or droplet) next to the number
+- Hidden when stacks = 0
+- Scales up briefly when stacks increase (juice: number pops +20% size for 0.1s then returns)
+
+**Burn indicator:**
+- Position: above HP bar, right side (next to poison if both active)
+- Orange flame icon
+- Text: "BURN" or flame emoji/icon
+- Hidden when not burning
+- Pulses while active (opacity oscillates 0.8-1.0)
+
+**Status combo indicator:**
+- When a status combo is active (e.g., Toxic Fire = poison + burn simultaneously):
+- Show combo name above all other indicators: "TOXIC FIRE" in orange-green gradient text
+- Brief flash on activation (scales up 150% over 0.2s, returns to 100%)
+- Unique color per combo type
+
+**Layout (top to bottom):**
+```
+[TOXIC FIRE]          ← combo name (only when active)
+[🔥 BURN] [💧12]     ← status icons + poison stacks
+[████████░░░░]        ← HP bar
+     Enemy            ← enemy mesh below
+```
+
+**Visibility rules:**
+- HP bar: hidden at full HP, visible after any damage
+- Poison: hidden at 0 stacks
+- Burn: hidden when not burning
+- Combo name: only visible when combo condition is met
+- All elements billboard toward camera at all times
+- All elements must be readable at 20-30m distance (scale with distance or use fixed screen-space size)
+
 ---
 
 ## 8. WAVES & STRUCTURE
