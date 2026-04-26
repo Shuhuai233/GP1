@@ -1,5 +1,5 @@
-## EnemyBase — Shared enemy logic: health, damage, hit handling, death
-## All enemy types extend this.
+## EnemyBase — Shared enemy logic for all enemy types.
+## Now supports both old take_bullet_hit(CardData) and new take_bullet_hit_new(damage, WeaponInstance, controller)
 class_name EnemyBase
 extends CharacterBody3D
 
@@ -20,6 +20,7 @@ var player: Node3D = null
 var attack_timer: float = 0.0
 var stun_timer: float = 0.0
 var gravity: float = 20.0
+var _time_scale: float = 1.0  # Time Warp spell
 
 
 func _ready() -> void:
@@ -27,31 +28,36 @@ func _ready() -> void:
 	add_to_group("enemies")
 	collision_layer = 4
 	collision_mask = 5
-
 	if status:
 		status.poison_changed.connect(_on_poison_changed)
 		status.burn_changed.connect(_on_burn_changed)
+		status.slow_changed.connect(_on_slow_changed)
+		status.freeze_changed.connect(_on_freeze_changed)
 
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 
+	var scaled_delta := delta * _time_scale
+
 	if stun_timer > 0:
 		stun_timer -= delta
-		move_and_slide()  # apply gravity but no behavior
+		velocity.x = 0.0
+		velocity.z = 0.0
 		if not is_on_floor():
 			velocity.y -= gravity * delta
+		move_and_slide()
 		return
 
 	if not is_on_floor():
-		velocity.y -= gravity * delta
+		velocity.y -= gravity * scaled_delta
 
 	if attack_timer > 0:
 		attack_timer -= delta
 
 	if player and not player.is_dead:
-		_update_behavior(delta)
+		_update_behavior(scaled_delta)
 
 	move_and_slide()
 
@@ -60,26 +66,30 @@ func _update_behavior(_delta: float) -> void:
 	pass
 
 
+func set_time_scale(scale: float) -> void:
+	_time_scale = scale
+
+
+func get_effective_speed() -> float:
+	var spd := move_speed * _time_scale
+	if status:
+		spd *= status.get_slow_fraction()
+	return spd
+
+
+# ─── OLD system hit (CardData) ────────────────────────────────────────────────
+
 func take_bullet_hit(card: CardData, weapon: Node3D = null) -> void:
 	if is_dead:
 		return
 
-	# Base damage
 	var damage := card.damage_per_bullet
 
-	# Headhunter: override headshot multiplier — simplified random 20% chance for Gate 1
-	if card.headshot_multiplier > 1.5 and randf() < 0.2:
-		damage = damage / 1.5 * card.headshot_multiplier  # replace default 1.5x with card's multiplier
-
-	# Weapon damage modifiers (war cry, megashot, iron skin, tracer, tempo)
 	if weapon and weapon.has_method("get_damage_for_bullet"):
 		damage = weapon.get_damage_for_bullet(damage, card, self)
-	elif weapon and weapon.has_method("get_tempo_bonus"):
-		damage += weapon.get_tempo_bonus(card)
 	else:
 		damage *= status.get_damage_multiplier()
 
-	# Apply status effects from this card
 	match card.status_effect:
 		CardData.StatusEffectType.POISON:
 			status.apply_poison(card.status_stacks_per_hit)
@@ -88,17 +98,27 @@ func take_bullet_hit(card: CardData, weapon: Node3D = null) -> void:
 		CardData.StatusEffectType.SHOCK:
 			status.apply_shock()
 
-	# Spread stacks on kill (Plague Round) — registered via on_death
-	# Armor piercing handled in damage (no resistance system yet)
-	# Explosive AoE handled in weapon._fire_single_ray
+	take_damage(damage)
+	_flash_hit()
+
+	if weapon and weapon.has_method("notify_hit"):
+		weapon.notify_hit(self, damage, card)
+
+
+# ─── NEW system hit (WeaponInstance) ─────────────────────────────────────────
+
+func take_bullet_hit_new(damage: float, weapon_instance: Object, controller: Node3D) -> void:
+	if is_dead:
+		return
+
+	# Apply status multipliers (Burn, Mark, Brittle)
+	damage *= status.get_damage_multiplier()
 
 	take_damage(damage)
 	_flash_hit()
 
-	# Notify weapon of the confirmed hit (for drain, vampiric, tracer, etc.)
-	if weapon and weapon.has_method("notify_hit"):
-		weapon.notify_hit(self, damage, card)
 
+# ─── Shared ───────────────────────────────────────────────────────────────────
 
 func take_damage(amount: float) -> void:
 	if is_dead:
@@ -144,13 +164,19 @@ func _flash_hit() -> void:
 
 
 func _on_poison_changed(stacks: int) -> void:
-	if enemy_ui:
-		enemy_ui.set_poison(stacks)
+	if enemy_ui: enemy_ui.set_poison(stacks)
 
 
-func _on_burn_changed(is_burning: bool) -> void:
-	if enemy_ui:
-		enemy_ui.set_burn(is_burning)
+func _on_burn_changed(burning: bool) -> void:
+	if enemy_ui: enemy_ui.set_burn(burning)
+
+
+func _on_slow_changed(slowed: bool) -> void:
+	if enemy_ui: enemy_ui.set_slow(slowed)
+
+
+func _on_freeze_changed(frozen: bool) -> void:
+	if enemy_ui: enemy_ui.set_freeze(frozen)
 
 
 func set_player_target(p: Node3D) -> void:

@@ -111,10 +111,13 @@ func _ready() -> void:
 		vignette.material.set_shader_parameter("intensity", 0.0)
 
 	EventBus.player_health_changed.emit(current_hp, max_hp)
-	EventBus.weapon_fired.connect(_on_weapon_fired)
+	EventBus.weapon_fired.connect(func(_c): recoil_offset += deg_to_rad(recoil_kick_degrees))
+	EventBus.weapon_fired_new.connect(_on_weapon_fired_new)
 	EventBus.enemy_died.connect(_on_enemy_killed)
 	EventBus.card_selection_started.connect(func(_c): is_selecting_card = true)
 	EventBus.card_selected.connect(func(_c): is_selecting_card = false)
+	EventBus.loot_offering_started.connect(func(_i): is_selecting_card = true)
+	EventBus.loot_item_selected.connect(func(_i): is_selecting_card = false)
 	EventBus.player_speed_changed.connect(_on_speed_changed)
 
 
@@ -357,8 +360,16 @@ func _apply_landing_impact() -> void:
 	landing_offset = deg_to_rad(landing_kick_degrees)
 
 
-func _on_weapon_fired(_card: Resource) -> void:
+func _on_weapon_fired_new(_wi: Object) -> void:
 	recoil_offset += deg_to_rad(recoil_kick_degrees)
+	# Steady Grip: suppress recoil
+	if weapon and weapon.has_method("get_active_weapon"):
+		var w = weapon.get_active_weapon()
+		if w:
+			for att in w.attachments:
+				if att.steady_grip:
+					recoil_offset = 0.0
+					break
 
 
 func take_damage(amount: float) -> void:

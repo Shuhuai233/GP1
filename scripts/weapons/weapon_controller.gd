@@ -241,11 +241,11 @@ func _fire() -> void:
 
 
 func _get_shoot_direction(base_dir: Vector3, cam: Camera3D, w: WeaponInstance) -> Vector3:
-	var is_ads := _player.has_method("get_is_ads") and _player.get_is_ads()
-	var spread := 0.0
+	var is_ads: bool = _player.has_method("get_is_ads") and _player.get_is_ads()
+	var spread: float = 0.0
 
 	# Holo Sight: zero spread in ADS
-	var has_holo := false
+	var has_holo: bool = false
 	for att in w.attachments:
 		if att.holo_sight: has_holo = true
 
@@ -258,8 +258,8 @@ func _get_shoot_direction(base_dir: Vector3, cam: Camera3D, w: WeaponInstance) -
 
 	if spread <= 0:
 		return base_dir
-	var dir := base_dir.rotated(cam.global_transform.basis.x, randf_range(-deg_to_rad(spread), deg_to_rad(spread)))
-	return dir.rotated(cam.global_transform.basis.y, randf_range(-deg_to_rad(spread), deg_to_rad(spread))).normalized()
+	var rotated_dir: Vector3 = base_dir.rotated(cam.global_transform.basis.x, randf_range(-deg_to_rad(spread), deg_to_rad(spread)))
+	return rotated_dir.rotated(cam.global_transform.basis.y, randf_range(-deg_to_rad(spread), deg_to_rad(spread))).normalized()
 
 
 func _raycast(from: Vector3, direction: Vector3) -> Dictionary:
@@ -546,10 +546,10 @@ func _cast_blink(spell: FunctionCardData) -> void:
 	if not cam: return
 	var space := get_world_3d().direct_space_state
 	var from := cam.global_position
-	var dir := -cam.global_transform.basis.z
-	var q := PhysicsRayQueryParameters3D.create(from, from + dir * spell.blink_range, 0b0001)
+	var blink_dir: Vector3 = -cam.global_transform.basis.z
+	var q := PhysicsRayQueryParameters3D.create(from, from + blink_dir * spell.blink_range, 0b0001)
 	var r := space.intersect_ray(q)
-	_player.global_position = r.position + r.normal * 0.5 if r else from + dir * spell.blink_range
+	_player.global_position = r.position + r.normal * 0.5 if r else from + blink_dir * spell.blink_range
 
 
 func _cast_shield_wall(spell: FunctionCardData) -> void:
@@ -754,10 +754,10 @@ func _pull_enemies_toward_player(delta: float) -> void:
 	if not _player: return
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy): continue
-		var dist := enemy.global_position.distance_to(_player.global_position)
+		var dist: float = enemy.global_position.distance_to(_player.global_position)
 		if dist <= _magnetize_radius and dist > 1.0:
-			var dir := (_player.global_position - enemy.global_position).normalized()
-			enemy.global_position += dir * _magnetize_pull * delta
+			var pull_dir: Vector3 = (_player.global_position - enemy.global_position).normalized()
+			enemy.global_position += pull_dir * _magnetize_pull * delta
 
 
 # ─── RELOAD ───────────────────────────────────────────────────────────────────

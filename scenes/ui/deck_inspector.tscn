@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/deck_inspector.gd" id="1"]
+
+[node name="DeckInspector" type="CanvasLayer"]
+layer = 25
+process_mode = 3
+script = ExtResource("1")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBox" type="HBoxContainer" parent="Panel"]
+layout_mode = 2
+alignment = 0
+
+[node name="WeaponsSection" type="VBoxContainer" parent="Panel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 0)
+
+[node name="WeaponsSectionTitle" type="Label" parent="Panel/HBox/WeaponsSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "WEAPONS & MODS"
+
+[node name="SpellsSection" type="VBoxContainer" parent="Panel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SpellsSectionTitle" type="Label" parent="Panel/HBox/SpellsSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "SPELL HAND"
+
+[node name="CloseHint" type="Label" parent="Panel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Tab / Esc to close"

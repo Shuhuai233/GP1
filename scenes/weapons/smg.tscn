@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="BoxMesh" id="body"]
+size = Vector3(0.055, 0.055, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_color = Color(0.3, 0.3, 0.45, 1)
+
+[sub_resource type="CylinderMesh" id="drum"]
+top_radius = 0.025
+bottom_radius = 0.025
+height = 0.12
+
+[sub_resource type="StandardMaterial3D" id="drum_mat"]
+albedo_color = Color(0.25, 0.25, 0.4, 1)
+
+[node name="SMG" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("body")
+surface_material_override/0 = SubResource("mat")
+
+[node name="Drum" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.04, -0.04, 0)
+mesh = SubResource("drum")
+surface_material_override/0 = SubResource("drum_mat")
+
+[node name="MuzzleFlash" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.18)
+light_energy = 0.0
+omni_range = 1.5

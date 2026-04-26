@@ -1,6 +1,5 @@
 ## WaveManager — Endless wave loop per GDD §8
-## Waves 1-3 fixed. Wave 4+: scaling (+1-2 enemies, +10% HP per wave).
-## Between every wave: cleared(3s) → rest(3s) → card pick → 25HP heal → countdown(3s) → 0.5s grace
+## New loot system per WEAPONS_AND_CARDS.md §6: function card / attachment / weapon / free attachment
 extends Node
 
 @export var grunt_scene: PackedScene
@@ -8,14 +7,13 @@ extends Node
 @export var big_eye_scene: PackedScene
 
 const BETWEEN_WAVE_HEAL: float = 25.0
-const HP_SCALE_PER_WAVE: float = 0.10   # +10% enemy HP per wave after wave 3
-const ENEMY_ADD_PER_WAVE: int = 1        # +1 enemy every wave after wave 3 (sometimes 2)
+const HP_SCALE_PER_WAVE: float = 0.10
 
 # Stats for death recap
 var total_enemies_killed: int = 0
-var total_cards_collected: int = 0
+var total_items_collected: int = 0
 var waves_survived: int = 0
-var highest_combo_damage: float = 0.0  # GDD §8: track highest combo
+var highest_combo_damage: float = 0.0
 
 var spawn_points: Array[Marker3D] = []
 var player: Node3D = null
@@ -32,67 +30,68 @@ var wave_defs: Array[Array] = [
 	[["big_eye", 1], ["rusher", 4], ["grunt", 2]],
 ]
 
-# Card pool: never Standard Round
-var _offer_pool: Array[CardData]
+# Loot pools
+var _function_card_pool: Array[FunctionCardData] = []
+var _attachment_pool: Array[AttachmentData] = []
+var _weapon_pool: Array[WeaponData] = []
 
 
 func _ready() -> void:
 	EventBus.enemy_died.connect(_on_enemy_died)
-	EventBus.card_selected.connect(_on_card_selected)
+	EventBus.loot_item_selected.connect(_on_loot_selected)
 	EventBus.enemy_poison_detonated.connect(_on_detonator_hit)
+	add_to_group("wave_manager")
+	_build_loot_pools()
 
-	_offer_pool = [
-		# NEUTRAL firing
-		preload("res://data/cards/piercing_round.tres"),
-		preload("res://data/cards/ricochet_round.tres"),
-		preload("res://data/cards/drain_round.tres"),
-		# NEUTRAL function
-		preload("res://data/cards/barrier.tres"),
-		preload("res://data/cards/vampiric_burst.tres"),
-		preload("res://data/cards/reload_surge.tres"),
-		# POWER firing
-		preload("res://data/cards/heavy_round.tres"),
-		preload("res://data/cards/armor_piercer.tres"),
-		preload("res://data/cards/headhunter_round.tres"),
-		preload("res://data/cards/explosive_round.tres"),
-		# POWER function
-		preload("res://data/cards/war_cry.tres"),
-		preload("res://data/cards/iron_skin.tres"),
-		preload("res://data/cards/megashot.tres"),
-		preload("res://data/cards/executioner.tres"),
-		# VENOM firing
-		preload("res://data/cards/venom_round.tres"),
-		preload("res://data/cards/toxic_needle.tres"),
-		preload("res://data/cards/plague_round.tres"),
-		# VENOM function
-		preload("res://data/cards/detonator_round.tres"),
-		preload("res://data/cards/toxin_bomb.tres"),
-		preload("res://data/cards/pandemic.tres"),
-		# BLAZE firing
-		preload("res://data/cards/incendiary_round.tres"),
-		preload("res://data/cards/ember_round.tres"),
-		preload("res://data/cards/magma_round.tres"),
-		# BLAZE function
-		preload("res://data/cards/flashfire.tres"),
-		preload("res://data/cards/inferno.tres"),
-		preload("res://data/cards/fuel.tres"),
-		# FLUX firing
-		preload("res://data/cards/quicksilver_round.tres"),
-		preload("res://data/cards/tempo_round.tres"),
-		preload("res://data/cards/tracer_round.tres"),
-		# FLUX function
-		preload("res://data/cards/phase_dash.tres"),
-		preload("res://data/cards/overclock.tres"),
-		preload("res://data/cards/adrenaline.tres"),
-		preload("res://data/cards/blink.tres"),
-		# SHOCK firing
-		preload("res://data/cards/volt_round.tres"),
-		preload("res://data/cards/arc_round.tres"),
-		preload("res://data/cards/static_round.tres"),
-		# SHOCK function
-		preload("res://data/cards/chain_lightning.tres"),
-		preload("res://data/cards/spotter.tres"),
-		preload("res://data/cards/emp_blast.tres"),
+func _build_loot_pools() -> void:
+	# Function cards (all 20)
+	_function_card_pool = [
+		preload("res://data/function_cards/poison_magazine.tres"),
+		preload("res://data/function_cards/fire_magazine.tres"),
+		preload("res://data/function_cards/shock_magazine.tres"),
+		preload("res://data/function_cards/frost_magazine.tres"),
+		preload("res://data/function_cards/explosive_magazine.tres"),
+		preload("res://data/function_cards/dash.tres"),
+		preload("res://data/function_cards/blink.tres"),
+		preload("res://data/function_cards/shield_wall.tres"),
+		preload("res://data/function_cards/iron_skin.tres"),
+		preload("res://data/function_cards/adrenaline.tres"),
+		preload("res://data/function_cards/vampiric_aura.tres"),
+		preload("res://data/function_cards/war_cry.tres"),
+		preload("res://data/function_cards/time_warp.tres"),
+		preload("res://data/function_cards/detonator.tres"),
+		preload("res://data/function_cards/chain_detonation.tres"),
+		preload("res://data/function_cards/purge.tres"),
+		preload("res://data/function_cards/shatter.tres"),
+		preload("res://data/function_cards/spotter.tres"),
+		preload("res://data/function_cards/reload_surge.tres"),
+		preload("res://data/function_cards/magnetize.tres"),
+	]
+	# Attachments (all 15)
+	_attachment_pool = [
+		preload("res://data/attachments/split_barrel.tres"),
+		preload("res://data/attachments/explosive_tips.tres"),
+		preload("res://data/attachments/ricochet_chamber.tres"),
+		preload("res://data/attachments/piercing_barrel.tres"),
+		preload("res://data/attachments/chain_link.tres"),
+		preload("res://data/attachments/drum_magazine.tres"),
+		preload("res://data/attachments/speed_loader.tres"),
+		preload("res://data/attachments/double_feed.tres"),
+		preload("res://data/attachments/holo_sight.tres"),
+		preload("res://data/attachments/thermal_scope.tres"),
+		preload("res://data/attachments/steady_grip.tres"),
+		preload("res://data/attachments/quick_grip.tres"),
+		preload("res://data/attachments/vampiric_barrel.tres"),
+		preload("res://data/attachments/elemental_converter.tres"),
+		preload("res://data/attachments/chaos_engine.tres"),
+	]
+	# Weapons (all 6 except Revolver which is the starter)
+	_weapon_pool = [
+		preload("res://data/weapons/ar.tres"),
+		preload("res://data/weapons/smg.tres"),
+		preload("res://data/weapons/shotgun.tres"),
+		preload("res://data/weapons/sniper.tres"),
+		preload("res://data/weapons/machine_pistol.tres"),
 	]
 
 
@@ -100,13 +99,12 @@ func initialize(p_player: Node3D, p_spawn_points: Array[Marker3D], p_enemy_conta
 	player = p_player
 	spawn_points = p_spawn_points
 	enemy_container = p_enemy_container
-	add_to_group("wave_manager")
 
 
 func start_game() -> void:
 	current_wave = 0
 	total_enemies_killed = 0
-	total_cards_collected = 0
+	total_items_collected = 0
 	waves_survived = 0
 	is_active = true
 	start_next_wave()
@@ -199,44 +197,81 @@ func _wave_cleared() -> void:
 
 
 func _begin_between_wave_flow() -> void:
-	# GDD §8 between-wave sequence:
-	# Step 1: "WAVE X CLEARED" (3 sec) — signal already emitted, main.gd shows it
+	# Step 1: "WAVE X CLEARED" (3 sec) — main.gd shows it
 	await get_tree().create_timer(3.0).timeout
-
-	# Step 2: Breathing room (3 sec) — just wait
+	# Step 2: Breathing room (3 sec)
 	await get_tree().create_timer(3.0).timeout
+	# Step 3: Loot offering (new system)
+	_offer_loot()
 
-	# Step 3: Card selection
-	_offer_card_selection()
+
+func _offer_loot() -> void:
+	## Wave 1: weapons appear; Wave 1: no attachments yet (wave 2+)
+	var items: Array = []
+
+	# Always guarantee 1 function card
+	var fc_pool := _function_card_pool.duplicate()
+	fc_pool.shuffle()
+	if fc_pool.size() > 0:
+		items.append({"type": "function_card", "data": fc_pool[0]})
+
+	# Fill remaining 2 slots based on rarity
+	var remaining_slots := 3 - items.size()
+	for _i in remaining_slots:
+		var roll := randf()
+		if roll < 0.4:
+			# Another function card
+			if fc_pool.size() > items.size():
+				items.append({"type": "function_card", "data": fc_pool[items.size() % fc_pool.size()]})
+			else:
+				items.append(_pick_attachment())
+		elif roll < 0.7 and current_wave >= 2:
+			items.append(_pick_attachment())
+		elif roll < 0.9 and current_wave >= 1:
+			items.append(_pick_weapon())
+		elif current_wave >= 2:
+			# Free attachment (~10%)
+			var att := _pick_attachment()
+			att["type"] = "free_attachment"
+			items.append(att)
+		else:
+			items.append({"type": "function_card", "data": fc_pool[randi() % fc_pool.size()]})
+
+	# Ensure exactly 3 items
+	while items.size() < 3:
+		items.append({"type": "function_card", "data": fc_pool[randi() % fc_pool.size()]})
+
+	EventBus.loot_offering_started.emit(items)
 
 
-func _offer_card_selection() -> void:
-	var pool := _offer_pool.duplicate()
+func _pick_attachment() -> Dictionary:
+	if _attachment_pool.is_empty():
+		return {"type": "function_card", "data": _function_card_pool[0]}
+	var pool := _attachment_pool.duplicate()
 	pool.shuffle()
-	var offered: Array = []
-	for card in pool:
-		offered.append(card)
-		if offered.size() >= 3:
-			break
-	EventBus.card_selection_started.emit(offered)
+	return {"type": "attachment", "data": pool[0]}
 
 
-func _on_card_selected(_card: Resource) -> void:
-	total_cards_collected += 1
+func _pick_weapon() -> Dictionary:
+	if _weapon_pool.is_empty():
+		return {"type": "function_card", "data": _function_card_pool[0]}
+	var pool := _weapon_pool.duplicate()
+	pool.shuffle()
+	return {"type": "weapon", "data": pool[0]}
 
+
+func _on_loot_selected(_item: Dictionary) -> void:
+	total_items_collected += 1
 	# Step 4: Heal 25 HP
 	if player and player.has_method("heal"):
 		player.heal(BETWEEN_WAVE_HEAL)
 	EventBus.between_wave_heal.emit(BETWEEN_WAVE_HEAL)
-
 	# Step 5: Wave countdown (3 sec)
 	await get_tree().create_timer(3.0).timeout
-
-	# Step 6: 0.5s grace period (invulnerability) — set flag, enemies won't deal damage
+	# Step 6: 0.5s grace period
 	_grace_active = true
 	await get_tree().create_timer(0.5).timeout
 	_grace_active = false
-
 	start_next_wave()
 
 
@@ -264,6 +299,6 @@ func get_recap_data() -> Dictionary:
 	return {
 		"waves_survived": waves_survived,
 		"enemies_killed": total_enemies_killed,
-		"cards_collected": total_cards_collected,
+		"items_collected": total_items_collected,
 		"highest_combo": highest_combo_damage,
 	}

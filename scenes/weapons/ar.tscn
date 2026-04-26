@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="BoxMesh" id="body"]
+size = Vector3(0.06, 0.06, 0.40)
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_color = Color(0.25, 0.3, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="mag"]
+size = Vector3(0.05, 0.12, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="mag_mat"]
+albedo_color = Color(0.2, 0.25, 0.15, 1)
+
+[node name="AR" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("body")
+surface_material_override/0 = SubResource("mat")
+
+[node name="Magazine" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.09, 0.05)
+mesh = SubResource("mag")
+surface_material_override/0 = SubResource("mag_mat")
+
+[node name="MuzzleFlash" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.22)
+light_energy = 0.0
+omni_range = 1.5

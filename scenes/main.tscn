@@ -1,16 +1,17 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/arena/arena.tscn" id="3"]
 [ext_resource type="Script" path="res://scripts/systems/wave_manager.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/player_hud.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/ui/card_selection_ui.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/systems/visual_feedback.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/grunt.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/rusher.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/big_eye.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://scenes/ui/spell_hand_ui.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/ui/loot_offering_ui.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://scenes/ui/deck_inspector.tscn" id="13"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1")
@@ -32,7 +33,9 @@ big_eye_scene = ExtResource("10")
 
 [node name="SpellHandUI" parent="." instance=ExtResource("11")]
 
-[node name="CardSelectionUI" parent="." instance=ExtResource("6")]
+[node name="LootOfferingUI" parent="." instance=ExtResource("12")]
+
+[node name="DeckInspector" parent="." instance=ExtResource("13")]
 
 [node name="VisualFeedback" parent="." instance=ExtResource("7")]
 
@@ -71,7 +74,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 18
-text = "Waves: 0 | Kills: 0 | Cards: 0"
+text = "Waves: 0 | Kills: 0 | Items: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 

@@ -1,13 +1,10 @@
-## Main — Root scene, game state management
-## Endless wave loop: no win state. Death shows recap. Restart resets all.
+## Main — Root scene, game state management. Endless wave loop.
 extends Node3D
 
 @onready var player: CharacterBody3D = $Player
 @onready var arena: Node3D = $Arena
 @onready var enemy_container: Node3D = $EnemyContainer
 @onready var wave_manager: Node = $WaveManager
-@onready var player_hud: CanvasLayer = $PlayerHUD
-@onready var card_selection_ui: CanvasLayer = $CardSelectionUI
 @onready var visual_feedback: Node3D = $VisualFeedback
 @onready var game_over_label: Label = $GameOverUI/GameOverLabel
 @onready var recap_label: Label = $GameOverUI/RecapLabel
@@ -33,7 +30,6 @@ func _ready() -> void:
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.wave_started.connect(_on_wave_started)
 	EventBus.wave_cleared.connect(_on_wave_cleared)
-	EventBus.card_selected.connect(_on_card_selected)
 	restart_button.pressed.connect(_on_restart_pressed)
 
 	$GameOverUI.visible = false
@@ -47,14 +43,12 @@ func _on_player_died() -> void:
 	if is_game_over:
 		return
 	is_game_over = true
-
-	# Show recap per GDD §8
 	var recap: Dictionary = wave_manager.get_recap_data()
 	game_over_label.text = "YOU DIED"
-	recap_label.text = "Waves survived: %d\nEnemies killed: %d\nCards collected: %d\nHighest combo: %.0f dmg" % [
+	recap_label.text = "Waves survived: %d\nEnemies killed: %d\nItems collected: %d\nHighest combo: %.0f dmg" % [
 		recap["waves_survived"],
 		recap["enemies_killed"],
-		recap["cards_collected"],
+		recap.get("items_collected", 0),
 		recap["highest_combo"],
 	]
 	$GameOverUI.visible = true
@@ -76,14 +70,8 @@ func _on_wave_cleared(wave_number: int) -> void:
 	wave_label.modulate.a = 1.0
 	wave_label.text = "WAVE %d CLEARED" % wave_number
 	var tween := create_tween()
-	tween.tween_interval(3.0)  # Hold full 3s per GDD §8
+	tween.tween_interval(3.0)
 	tween.tween_property(wave_label, "modulate:a", 0.0, 0.5)
-
-
-func _on_card_selected(card: Resource) -> void:
-	var weapon := player.get_node("Head/WeaponHolder")
-	if weapon and weapon.has_method("add_card_to_deck"):
-		weapon.add_card_to_deck(card.duplicate())
 
 
 func _on_restart_pressed() -> void:

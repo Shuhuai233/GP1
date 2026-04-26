@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="BoxMesh" id="body"]
+size = Vector3(0.05, 0.04, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_color = Color(0.2, 0.2, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="scope"]
+size = Vector3(0.03, 0.04, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="scope_mat"]
+albedo_color = Color(0.15, 0.15, 0.2, 1)
+
+[node name="Sniper" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("body")
+surface_material_override/0 = SubResource("mat")
+
+[node name="Scope" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -0.08)
+mesh = SubResource("scope")
+surface_material_override/0 = SubResource("scope_mat")
+
+[node name="MuzzleFlash" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.3)
+light_energy = 0.0
+omni_range = 1.0
