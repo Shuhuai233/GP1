@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Spotter"
+card_type = 1
+playstyle = 5
+description = "Aim at target: apply Mark (+30% damage taken, 6 sec)."
+apply_mark = true
+mark_damage_bonus = 0.3
+mark_duration = 6.0
+color = Color(1, 0.2, 0.2, 1)
+trail_color = Color(1, 0.2, 0.2, 1)
+muzzle_color = Color(1, 0.2, 0.2, 1)

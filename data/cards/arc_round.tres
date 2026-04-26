@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Arc Round"
+card_type = 0
+playstyle = 5
+description = "Hit chains to 2 nearby enemies within 8m for 40% damage each."
+bullets_per_pack = 4
+damage_per_bullet = 8.0
+chain_count = 2
+chain_range = 8.0
+chain_damage_multiplier = 0.4
+color = Color(0.5, 0.7, 1, 1)
+trail_color = Color(0.5, 0.7, 1, 1)
+muzzle_color = Color(0.5, 0.7, 1, 1)

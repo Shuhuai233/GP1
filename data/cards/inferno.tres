@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Inferno"
+card_type = 1
+playstyle = 3
+description = "All currently burning enemies take 30 instant fire damage."
+inferno = true
+inferno_damage = 30.0
+color = Color(0.8, 0.2, 0, 1)
+trail_color = Color(0.8, 0.2, 0, 1)
+muzzle_color = Color(0.8, 0.2, 0, 1)

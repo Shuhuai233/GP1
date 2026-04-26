@@ -6,6 +6,8 @@
 script = ExtResource("1")
 card_name = &"Venom Round"
 card_type = 0
+playstyle = 2
+description = "+2 poison stacks per hit. The core stacker."
 bullets_per_pack = 6
 damage_per_bullet = 6.0
 status_effect = 1

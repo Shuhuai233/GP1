@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Heavy Round"
+card_type = 0
+playstyle = 1
+description = "High damage per bullet. Fewer bullets, each one HURTS."
+bullets_per_pack = 4
+damage_per_bullet = 15.0
+status_effect = 0
+color = Color(0.7, 0.6, 0.1, 1)
+trail_color = Color(0.7, 0.6, 0.1, 1)
+muzzle_color = Color(0.7, 0.6, 0.1, 1)

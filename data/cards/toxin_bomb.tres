@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Toxin Bomb"
+card_type = 1
+playstyle = 2
+description = "All enemies within 8m gain 5 poison stacks instantly."
+area_poison = true
+area_poison_radius = 8.0
+area_poison_stacks = 5
+color = Color(0.3, 0.6, 0.1, 1)
+trail_color = Color(0.3, 0.6, 0.1, 1)
+muzzle_color = Color(0.3, 0.6, 0.1, 1)

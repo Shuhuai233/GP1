@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Plague Round"
+card_type = 0
+playstyle = 2
+description = "+2 poison stacks. On kill: spreads stacks to nearest enemy within 8m."
+bullets_per_pack = 4
+damage_per_bullet = 6.0
+status_effect = 1
+status_stacks_per_hit = 2
+spread_stacks_on_kill = true
+spread_stacks_range = 8.0
+color = Color(0.5, 0.7, 0.1, 1)
+trail_color = Color(0.5, 0.7, 0.1, 1)
+muzzle_color = Color(0.5, 0.7, 0.1, 1)

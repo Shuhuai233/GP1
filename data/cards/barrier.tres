@@ -6,6 +6,8 @@
 script = ExtResource("1")
 card_name = &"Barrier"
 card_type = 1
+playstyle = 0
+description = "30 HP shield for 5 sec."
 bullets_per_pack = 0
 damage_per_bullet = 0.0
 status_effect = 0

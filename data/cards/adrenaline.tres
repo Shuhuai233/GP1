@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Adrenaline"
+card_type = 1
+playstyle = 4
+description = "6 sec: +40% move speed, +20% fire rate, +20% reload speed."
+speed_buff = true
+speed_buff_move = 0.4
+speed_buff_fire_rate = 0.2
+speed_buff_reload = 0.2
+speed_buff_duration = 6.0
+color = Color(1, 0.5, 0.7, 1)
+trail_color = Color(1, 0.5, 0.7, 1)
+muzzle_color = Color(1, 0.5, 0.7, 1)

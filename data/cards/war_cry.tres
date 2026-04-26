@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"War Cry"
+card_type = 1
+playstyle = 1
+description = "Next magazine: ALL firing cards deal +50% damage."
+war_cry = true
+war_cry_multiplier = 1.5
+color = Color(0.9, 0.8, 0.1, 1)
+trail_color = Color(0.9, 0.8, 0.1, 1)
+muzzle_color = Color(0.9, 0.8, 0.1, 1)

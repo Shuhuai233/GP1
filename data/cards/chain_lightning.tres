@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Chain Lightning"
+card_type = 1
+playstyle = 5
+description = "Hitscan at crosshair. If target Shocked: bounces to 3 enemies, 15 dmg each."
+chain_lightning = true
+chain_lightning_bounces = 3
+chain_lightning_damage = 15.0
+color = Color(0.3, 0.5, 1, 1)
+trail_color = Color(0.3, 0.5, 1, 1)
+muzzle_color = Color(0.3, 0.5, 1, 1)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Vampiric Burst"
+card_type = 1
+playstyle = 0
+description = "3 sec: all gun damage heals player for 50% of damage dealt."
+vampiric_burst = true
+vampiric_ratio = 0.5
+vampiric_duration = 3.0
+color = Color(0.6, 0.1, 0.1, 1)
+trail_color = Color(0.6, 0.1, 0.1, 1)
+muzzle_color = Color(0.6, 0.1, 0.1, 1)

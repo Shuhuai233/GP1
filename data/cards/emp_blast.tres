@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"EMP Blast"
+card_type = 1
+playstyle = 5
+description = "All enemies within 12m get Shocked + stunned for 1 sec."
+emp = true
+emp_radius = 12.0
+emp_stun_duration = 1.0
+color = Color(0.5, 0.6, 1, 1)
+trail_color = Color(0.5, 0.6, 1, 1)
+muzzle_color = Color(0.5, 0.6, 1, 1)

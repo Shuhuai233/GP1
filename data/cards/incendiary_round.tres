@@ -6,6 +6,8 @@
 script = ExtResource("1")
 card_name = &"Incendiary Round"
 card_type = 0
+playstyle = 3
+description = "Applies Burn (+20% dmg taken, 5 sec, refreshes)."
 bullets_per_pack = 6
 damage_per_bullet = 8.0
 status_effect = 2

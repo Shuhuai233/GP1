@@ -6,6 +6,8 @@
 script = ExtResource("1")
 card_name = &"Flashfire"
 card_type = 1
+playstyle = 3
+description = "All enemies within 10m get Burn."
 bullets_per_pack = 0
 damage_per_bullet = 0.0
 status_effect = 0

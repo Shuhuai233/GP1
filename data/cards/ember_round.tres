@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Ember Round"
+card_type = 0
+playstyle = 3
+description = "Applies Burn. 8 bullets for sustained burn uptime."
+bullets_per_pack = 8
+damage_per_bullet = 5.0
+status_effect = 2
+color = Color(1, 0.6, 0.2, 1)
+trail_color = Color(1, 0.6, 0.2, 1)
+muzzle_color = Color(1, 0.6, 0.2, 1)

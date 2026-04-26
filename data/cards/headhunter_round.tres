@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Headhunter Round"
+card_type = 0
+playstyle = 1
+description = "Headshots deal 3x damage instead of 1.5x."
+bullets_per_pack = 6
+damage_per_bullet = 8.0
+headshot_multiplier = 3.0
+color = Color(0.7, 0.15, 0.15, 1)
+trail_color = Color(0.7, 0.15, 0.15, 1)
+muzzle_color = Color(0.7, 0.15, 0.15, 1)

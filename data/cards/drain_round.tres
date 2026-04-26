@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Drain Round"
+card_type = 0
+playstyle = 0
+description = "Each hit heals player 2 HP."
+bullets_per_pack = 6
+damage_per_bullet = 5.0
+drain_hp_per_hit = 2.0
+color = Color(0.6, 0.1, 0.1, 1)
+trail_color = Color(0.6, 0.1, 0.1, 1)
+muzzle_color = Color(0.6, 0.1, 0.1, 1)

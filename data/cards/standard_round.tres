@@ -6,6 +6,8 @@
 script = ExtResource("1")
 card_name = &"Standard Round"
 card_type = 0
+playstyle = 0
+description = "No effect. Baseline damage."
 bullets_per_pack = 6
 damage_per_bullet = 8.0
 status_effect = 0

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Volt Round"
+card_type = 0
+playstyle = 5
+description = "Hit chains to 1 nearby enemy within 5m for 50% damage."
+bullets_per_pack = 6
+damage_per_bullet = 7.0
+chain_count = 1
+chain_range = 5.0
+chain_damage_multiplier = 0.5
+color = Color(0.3, 0.5, 1, 1)
+trail_color = Color(0.3, 0.5, 1, 1)
+muzzle_color = Color(0.3, 0.5, 1, 1)

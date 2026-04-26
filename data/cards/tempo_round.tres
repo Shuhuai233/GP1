@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = &"Tempo Round"
+card_type = 0
+playstyle = 4
+description = "Consecutive hits within 0.5s: +2 bonus damage each. Miss resets."
+bullets_per_pack = 6
+damage_per_bullet = 6.0
+combo_bonus_per_hit = 2.0
+combo_window = 0.5
+color = Color(0.8, 0.2, 0.6, 1)
+trail_color = Color(0.8, 0.2, 0.6, 1)
+muzzle_color = Color(0.8, 0.2, 0.6, 1)
