@@ -152,18 +152,19 @@ The crosshair area must remain visually clean at all times. Card color tinting i
 
 | Action | Key | Behavior |
 |---|---|---|
-| Fire | Left Mouse (hold or click) | Fires current card pack. Semi-auto feel at ~2/sec. |
-| Reload | R | Manual reload. 2 sec animation. Wastes remaining bullets in current pack. Reshuffles BOTH gun and spell hand. |
+| Fire | Left Mouse (hold or click) | Fires current card pack. Fire rate depends on weapon. |
+| Reload | R | Manual reload. Time depends on weapon. Wastes remaining bullets. Reshuffles BOTH gun and spell hand. |
 | Aim (ADS) | Right Mouse (hold) | Slight zoom (FOV 90→75), tighter crosshair, slower move speed |
-| Cast Spell | F | Triggers the active function card in spell hand. Spells auto-advance (next unconsumed spell becomes active). |
+| Cast Spell | F | Triggers the active function card in spell hand (5 slots). Spells auto-advance. |
+| Switch Weapon | Scroll Wheel or 1-4 | Instant switch between 4 weapons. No animation delay. |
+| Inspect Deck | Tab | Pauses game. Shows all cards in deck with full details. Tab or Esc to close. |
 
 **Firing behavior:**
-- Semi-automatic: player must click for each shot (no full-auto hold)
-- Fire rate cap: ~3 shots/sec (0.33s between shots minimum)
+- Fire rate depends on weapon: Revolver ~3/sec, Rifle ~5/sec, SMG ~8/sec, Shotgun ~1.5/sec
 - Raycast from camera center (hitscan, not projectile for Gate 1)
 - Bullet spread: none while standing still. Minimal spread while moving (+1 degree). No spread while ADS.
 
-**Why semi-auto, not full-auto:** The revolver fires deliberately. Each shot has weight. At 3/sec, the player has ~0.33s between clicks. This is fast enough to feel punchy while still supporting card-mode awareness.
+**Weapon switching:** Instant. No delay. Each weapon preserves its own magazine state. Reload reshuffles ALL weapons' magazines from the shared deck.
 
 **ADS (Aim Down Sights):**
 

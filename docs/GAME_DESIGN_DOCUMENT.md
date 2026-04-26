@@ -22,10 +22,10 @@
 - REACTIVE — player responds to whatever card pack comes up
 
 ### Left Hand — Spell (Function Cards)
-- Holds up to 3 function cards
+- Holds up to 5 function cards
 - Player triggers the active spell deliberately
 - One-time effects: execute, shield, dash, area setup, etc.
-- Consumed on use. When all 3 are consumed, hand is empty until reload.
+- Consumed on use. When all 5 are consumed, hand is empty until reload.
 - PROACTIVE — player chooses when and where to trigger
 
 ### Controls
@@ -35,6 +35,8 @@
 | Aim down sights (ADS) | Right Click (hold) |
 | Trigger spell | F key |
 | Reload (both hands) | R key |
+| Inspect deck | Tab (pauses game) |
+| Switch weapon | Scroll wheel or 1-4 number keys |
 | Move | WASD |
 | Sprint | Shift (hold) |
 | Jump | Space |
@@ -44,31 +46,68 @@ Spells auto-advance: after using a spell, the next unconsumed spell becomes acti
 
 ### Deck Structure
 - ONE shared deck containing both firing cards and function cards
-- On reload: deck shuffles → firing cards load into gun (top 6) → function cards load into spell hand (top 3)
+- On reload: deck shuffles → firing cards load into gun (top 6) → function cards load into spell hand (top 5)
 - Remaining cards wait for next reload
 - Reload reshuffles BOTH hands (R reloads everything)
 - Reload mid-pack: remaining bullets in current pack WASTED
 
+### Deck Inspection (Tab)
+- Press Tab to pause the game and open deck inspector
+- Shows ALL cards currently in your deck (firing and function, separated)
+- Each card shows: name, playstyle color, full description, stats
+- Current magazine and spell hand contents highlighted
+- Press Tab again or Esc to close and resume
+
 ### Edge Cases
 - 0 function cards in deck: spell hand is empty. Valid but suboptimal.
 - 0 firing cards in deck: impossible. Minimum 3 Standard Rounds always in deck (cannot be removed).
-- Unbalanced deck (e.g., 9 firing + 1 function): gun full, spell hand has 1 card and 2 empty slots.
+- Unbalanced deck (e.g., 9 firing + 1 function): gun full, spell hand has 1 card and 4 empty slots.
 
 ---
 
-## 3. WEAPON: REVOLVER (Gate 1)
+## 3. WEAPONS (4 weapons)
+
+Player carries all 4 weapons and switches with scroll wheel or 1-4 keys. Each weapon shares the same card deck but plays cards differently through its primal perk. Weapon switching is instant (no animation delay).
+
+### Weapon Stats
+
+| Weapon | Fire rate | Magazine | Bullets/pack | Reload | Primal Perk |
+|---|---|---|---|---|---|
+| Revolver | ~3/sec | 6 packs | 6 | 2.0s | **First Shot** — first card pack each magazine deals 2x damage |
+| Rifle | ~5/sec | 6 packs | 8 | 2.5s | **Marksman** — ADS accuracy is perfect + ADS damage +15% |
+| SMG | ~8/sec | 6 packs | 15 | 1.5s | **Bullet Storm** — every 5th hit triggers the card effect twice |
+| Shotgun | ~1.5/sec | 4 packs | 3 blasts | 2.0s | **Spread** — each blast fires 5 pellets, each pellet applies card effects independently |
+
+### Weapon Design Intentions
+
+**Revolver** — The starter weapon. Balanced, readable, each shot feels weighty. Primal perk (2x first pack) rewards reloading at the right time to guarantee your best card gets the damage bonus. Good for POWER (massive first shot) and VENOM (big opening Detonator setup).
+
+**Rifle** — The precision weapon. Faster than revolver, more bullets per pack (8 = longer card mode duration). ADS-focused: primal perk rewards players who aim down sights consistently. Good for POWER (Headhunter + ADS bonus) and SHOCK (more hits = more chain triggers).
+
+**SMG** — The speed weapon. Very fast fire rate, most bullets per pack (15 = ~2 sec per pack at 8/sec). Low damage per bullet but massive volume. Primal perk (every 5th hit triggers twice) rewards sustained fire. Good for FLUX (tempo/combo builds), VENOM (fastest stacking speed), and BLAZE (most burn refreshes).
+
+**Shotgun** — The crowd control weapon. Slow fire rate, fewest packs (4), but each blast fires 5 pellets. With Venom Round: 5 pellets × 2 stacks = 10 stacks per blast. With Volt Round: 5 pellets that each chain = lightning everywhere. Good for VENOM (turbo-stacking), SHOCK (maximum chain triggers), and close-range POWER (5 × 15 dmg Heavy Round = 75 per blast).
+
+### Shared Weapon Stats (all weapons)
 
 | Stat | Value |
 |---|---|
-| Fire rate | ~3 shots/sec (semi-auto, click per shot) |
-| Magazine | 6 card packs |
-| Bullets per pack | 6 (except Detonator: see spell) |
-| Reload time | 2 seconds |
-| Base bullet damage | 8 |
+| Base bullet damage | 8 (modified by card) |
 | ADS FOV | 75 (from 90) |
 | ADS move speed | 60% of walk (3 m/s) |
 | ADS transition | 0.1 seconds |
 | Spread | 0 (still or ADS), +1 degree (moving hip-fire) |
+
+### Weapon Switching Rules
+- Switch is instant (no animation delay)
+- Switching does NOT trigger reload
+- The current magazine state is preserved per weapon (if you switch away and back, your magazine is where you left it)
+- ALL weapons share the same deck — when any weapon reloads, the entire deck reshuffles and both gun magazine + spell hand refill
+- Each weapon has its own magazine state (6 slots for revolver/rifle/SMG, 4 for shotgun)
+
+### How Card Packs Work Per Weapon
+- **Revolver, Rifle, SMG:** each card pack = X bullets fired one at a time
+- **Shotgun:** each card pack = X blasts, each blast fires 5 pellets simultaneously. Per-pellet damage = card damage ÷ 3 (balanced for 5 pellets). Status effects apply per pellet.
 
 ---
 
@@ -355,11 +394,8 @@ These are designed or discussed but NOT built yet:
 
 - Extraction mechanic (v0.5)
 - Meta-progression / card unlocks (v0.5)
-- Additional weapons (Rifle, SMG, Shotgun with primal perks) (Gate 3+)
 - Slow, Shock, Mark statuses (Gate 2)
 - Status combos beyond Toxic Fire (Gate 2)
-- Additional firing cards: Frost, Volt, Ricochet, Scatter, Drain, Overcharge, Catalyst, Resonance (Gate 2-3)
-- Additional function cards: Chain Lightning, Purge, Spotter, Toxin Bomb, Phase Step, Vampiric Burst, Overclock, Infusion, Reload Surge (Gate 2-3)
 - Additional enemies: Sniper, Shield Bearer, Bomber (Gate 2)
 - Status-resistant enemies (Gate 2)
 - Boss design (v0.5)
