@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AttachmentData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/attachment_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+attachment_name = &"Steady Grip"
+category = 3
+description = "Zero recoil. No camera kick on fire."
+color = Color(0.6, 0.4, 0.2, 1)
+steady_grip = true

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Dash"
+category = 1
+description = "Dash 5m in movement direction. 0.2s invincible."
+color = Color(0.8, 0.8, 0.8, 1)
+is_dash = true
+dash_distance = 5.0
+dash_iframes = 0.2

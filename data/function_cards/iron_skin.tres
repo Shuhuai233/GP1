@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Iron Skin"
+category = 1
+description = "Absorb next 3 hits regardless of damage. Lasts 8s."
+color = Color(0.6, 0.6, 0.6, 1)
+is_iron_skin = true
+iron_skin_hits = 3
+iron_skin_duration = 8.0

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AttachmentData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/attachment_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+attachment_name = &"Vampiric Barrel"
+category = 4
+description = "Every bullet heals 1 HP on hit."
+color = Color(0.6, 0, 0.1, 1)
+vampiric_barrel = true
+vampiric_hp_per_hit = 1.0

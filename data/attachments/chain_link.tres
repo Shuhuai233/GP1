@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AttachmentData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/attachment_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+attachment_name = &"Chain Link"
+category = 0
+description = "On hit, chains to 1 nearby enemy (6m) for 40% damage."
+color = Color(0.4, 0.8, 1, 1)
+chain_link = true
+chain_range = 6.0
+chain_damage_fraction = 0.4

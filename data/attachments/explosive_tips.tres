@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AttachmentData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/attachment_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+attachment_name = &"Explosive Tips"
+category = 0
+description = "Bullets explode on impact. 2m AoE. 40% of bullet damage."
+color = Color(1, 0.5, 0, 1)
+explosive_tips = true
+explosive_radius = 2.0
+explosive_damage_fraction = 0.4

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Shock Magazine"
+category = 0
+description = "Remaining bullets chain to 1 nearby enemy for 40% damage."
+color = Color(0.3, 0.7, 1, 1)
+is_magazine_spell = true
+mag_apply_shock = true

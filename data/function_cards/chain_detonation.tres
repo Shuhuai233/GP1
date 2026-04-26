@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Chain Detonation"
+category = 2
+description = "Hitscan. Consume all poison. 3x bonus. Spread 50% stacks to enemies within 6m."
+color = Color(0.5, 0.3, 1, 1)
+is_chain_detonation = true
+chain_det_spread_radius = 6.0
+chain_det_spread_fraction = 0.5

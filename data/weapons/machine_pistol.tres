@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+weapon_name = &"Machine Pistol"
+weapon_type = 5
+description = "Run-and-gun. Built-in +15% move speed while firing."
+fire_rate = 8.0
+magazine_size = 30
+damage_per_bullet = 4.0
+reload_time = 1.2
+pellets_per_shot = 1
+ads_fov = 75.0
+headshot_multiplier = 2.0
+hip_spread = 1.0
+move_spread = 1.5
+ads_spread = 0.0
+move_speed_bonus_while_firing = 0.15
+color = Color(0.8, 0.8, 0.3, 1)
+model_scene_path = "res://scenes/weapons/machine_pistol.tscn"

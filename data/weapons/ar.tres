@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+weapon_name = &"AR"
+weapon_type = 1
+description = "The all-rounder. Reliable, versatile, becomes a monster with attachments."
+fire_rate = 6.0
+magazine_size = 40
+damage_per_bullet = 6.0
+reload_time = 2.5
+pellets_per_shot = 1
+ads_fov = 75.0
+headshot_multiplier = 2.0
+hip_spread = 0.5
+move_spread = 1.5
+ads_spread = 0.0
+move_speed_bonus_while_firing = 0.0
+color = Color(0.4, 0.7, 0.4, 1)
+model_scene_path = "res://scenes/weapons/ar.tscn"

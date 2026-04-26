@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Frost Magazine"
+category = 0
+description = "Remaining bullets apply Slow (-50% move, 4s, refreshes)."
+color = Color(0.5, 0.9, 1, 1)
+is_magazine_spell = true
+mag_apply_slow = true

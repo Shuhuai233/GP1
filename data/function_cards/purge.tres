@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Purge"
+category = 2
+description = "Hitscan. Consume ALL statuses. 15 dmg per type + 2 dmg per stack."
+color = Color(1, 0.95, 0.7, 1)
+is_purge = true
+purge_damage_per_type = 15.0
+purge_damage_per_stack = 2.0

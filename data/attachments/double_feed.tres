@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AttachmentData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/attachment_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+attachment_name = &"Double Feed"
+category = 1
+description = "Every shot fires 2 bullets. Magazine drains 2x."
+color = Color(0.8, 0.4, 0.8, 1)
+double_feed = true

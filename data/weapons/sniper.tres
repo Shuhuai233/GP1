@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+weapon_name = &"Sniper Rifle"
+weapon_type = 4
+description = "One shot, one kill. 30 damage. 3x headshot = 90. ADS mandatory."
+fire_rate = 0.8
+magazine_size = 5
+damage_per_bullet = 30.0
+reload_time = 3.0
+pellets_per_shot = 1
+ads_fov = 36.0
+headshot_multiplier = 3.0
+hip_spread = 8.0
+move_spread = 10.0
+ads_spread = 0.0
+move_speed_bonus_while_firing = 0.0
+color = Color(0.3, 0.3, 0.8, 1)
+model_scene_path = "res://scenes/weapons/sniper.tscn"

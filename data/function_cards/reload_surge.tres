@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Reload Surge"
+category = 3
+description = "Instant reload. Magazine spell PRESERVED after reload."
+color = Color(0.95, 0.95, 0.95, 1)
+is_reload_surge = true

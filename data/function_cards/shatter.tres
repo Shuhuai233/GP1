@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Shatter"
+category = 2
+description = "Hitscan. If target Slowed: freeze (3s stun) + 50 damage. Otherwise wasted."
+color = Color(0.8, 0.95, 1, 1)
+is_shatter = true
+shatter_damage = 50.0
+shatter_freeze_duration = 3.0

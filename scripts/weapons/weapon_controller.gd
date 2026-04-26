@@ -1,0 +1,871 @@
+## WeaponController — New weapon system per WEAPONS_AND_CARDS.md
+## Player carries 2 weapons. Switch with scroll/1-2. Each weapon has own magazine.
+## Spell hand: 5 function card slots. F key casts active spell. Refills on reload.
+## Magazine spells: apply to remaining bullets in current mag. Cleared on reload.
+extends Node3D
+
+const MAX_WEAPONS: int = 2
+const SPELL_SLOTS: int = 5
+const MAX_RAY_DISTANCE: float = 100.0
+
+@onready var fire_timer: Timer = $FireTimer
+@onready var reload_timer: Timer = $ReloadTimer
+@onready var weapon_models_node: Node3D = $WeaponModels
+@onready var muzzle_point: Marker3D = $MuzzlePoint
+
+enum State { IDLE, FIRING, RELOADING }
+var state: State = State.IDLE
+var can_fire: bool = true
+
+# ─── Weapon slots ─────────────────────────────────────────────────────────────
+var weapons: Array = [null, null]  # Array[WeaponInstance]
+var active_slot: int = 0
+var _switch_cooldown: float = 0.0
+
+# ─── Spell hand ───────────────────────────────────────────────────────────────
+var spell_hand: Array = []  # Array[FunctionCardData], up to 5 slots
+var spell_consumed: Array[bool] = []
+var active_spell_index: int = -1
+
+# ─── Active buff state ────────────────────────────────────────────────────────
+var _war_cry_active: bool = false
+var _war_cry_timer: float = 0.0
+var _war_cry_bonus: float = 0.0
+
+var _vampiric_active: bool = false
+var _vampiric_timer: float = 0.0
+var _vampiric_ratio: float = 0.0
+
+var _adrenaline_active: bool = false
+var _adrenaline_timer: float = 0.0
+var _adrenaline_fire_bonus: float = 0.0
+
+var _time_warp_active: bool = false
+var _time_warp_timer: float = 0.0
+
+var _iron_skin_hits_remaining: int = 0
+var _iron_skin_timer: float = 0.0
+
+var _magnetize_active: bool = false
+var _magnetize_timer: float = 0.0
+var _magnetize_pull: float = 0.0
+var _magnetize_radius: float = 0.0
+
+# Shield Wall: a static physics body we spawn in front of player
+var _shield_wall_node: StaticBody3D = null
+
+var _player: Node3D = null
+
+# All weapon resources
+var _weapon_resources: Dictionary = {}  # WeaponType int → WeaponData
+# All function card resources
+var _starter_spells: Array[FunctionCardData] = []
+
+
+func _ready() -> void:
+	# Load weapon resources
+	_weapon_resources[0] = preload("res://data/weapons/revolver.tres")
+	_weapon_resources[1] = preload("res://data/weapons/ar.tres")
+	_weapon_resources[2] = preload("res://data/weapons/smg.tres")
+	_weapon_resources[3] = preload("res://data/weapons/shotgun.tres")
+	_weapon_resources[4] = preload("res://data/weapons/sniper.tres")
+	_weapon_resources[5] = preload("res://data/weapons/machine_pistol.tres")
+
+	# Starter loadout: Revolver in slot 0
+	weapons[0] = WeaponInstance.new(_weapon_resources[0])
+	weapons[1] = null
+
+	# Starter spell hand: Poison Magazine, Fire Magazine, Detonator, Shield Wall, Dash
+	_starter_spells = [
+		preload("res://data/function_cards/poison_magazine.tres"),
+		preload("res://data/function_cards/fire_magazine.tres"),
+		preload("res://data/function_cards/detonator.tres"),
+		preload("res://data/function_cards/shield_wall.tres"),
+		preload("res://data/function_cards/dash.tres"),
+	]
+	_init_spell_hand(_starter_spells)
+
+	# Timer setup
+	fire_timer.one_shot = true
+	reload_timer.one_shot = true
+	fire_timer.timeout.connect(_on_fire_timeout)
+	reload_timer.timeout.connect(_on_reload_finished)
+
+	_player = get_parent().get_parent().get_parent()
+	_update_fire_timer()
+	_emit_weapon_state()
+
+
+func _process(delta: float) -> void:
+	# ── Buff timers ──
+	if _war_cry_active:
+		_war_cry_timer -= delta
+		if _war_cry_timer <= 0: _war_cry_active = false
+
+	if _vampiric_active:
+		_vampiric_timer -= delta
+		if _vampiric_timer <= 0: _vampiric_active = false
+
+	if _adrenaline_active:
+		_adrenaline_timer -= delta
+		if _adrenaline_timer <= 0:
+			_adrenaline_active = false
+			_update_fire_timer()
+			if _player: EventBus.player_speed_changed.emit(1.0)
+
+	if _time_warp_active:
+		_time_warp_timer -= delta
+		if _time_warp_timer <= 0:
+			_time_warp_active = false
+			_set_enemy_time_warp(1.0)
+
+	if _iron_skin_timer > 0:
+		_iron_skin_timer -= delta
+		if _iron_skin_timer <= 0: _iron_skin_hits_remaining = 0
+
+	if _magnetize_active:
+		_magnetize_timer -= delta
+		if _magnetize_timer <= 0:
+			_magnetize_active = false
+		else:
+			_pull_enemies_toward_player(delta)
+
+	if _switch_cooldown > 0:
+		_switch_cooldown -= delta
+
+	if state == State.RELOADING:
+		return
+
+	var w := get_active_weapon()
+	if w and w.is_empty() and state == State.IDLE:
+		start_reload()
+		return
+
+	# ── Weapon switch ──
+	if Input.is_action_just_pressed("weapon_slot_1"):
+		switch_to_slot(0)
+	elif Input.is_action_just_pressed("weapon_slot_2"):
+		switch_to_slot(1)
+	else:
+		var scroll := Input.get_axis("weapon_prev", "weapon_next")
+		if scroll != 0 and _switch_cooldown <= 0:
+			var next := (active_slot + 1) % MAX_WEAPONS
+			switch_to_slot(next)
+			_switch_cooldown = 0.15
+
+	# ── Fire ──
+	if Input.is_action_just_pressed("fire") and can_fire and state == State.IDLE and w:
+		_fire()
+
+	# ── Spell ──
+	if Input.is_action_just_pressed("cast_spell"):
+		_cast_active_spell()
+
+	# ── Reload ──
+	if Input.is_action_just_pressed("reload") and state != State.RELOADING:
+		start_reload()
+
+
+# ─── WEAPON SWITCHING ─────────────────────────────────────────────────────────
+
+func switch_to_slot(slot: int) -> void:
+	if slot == active_slot or slot >= MAX_WEAPONS:
+		return
+	if weapons[slot] == null:
+		return  # Empty slot — can't switch
+
+	# Quick Grip: i-frames on switch
+	var new_w: WeaponInstance = weapons[slot]
+	var has_quick_grip := false
+	for att in new_w.attachments:
+		if att.quick_grip:
+			has_quick_grip = true
+			break
+	if has_quick_grip:
+		var wm := get_tree().get_first_node_in_group("wave_manager")
+		if wm and wm.has_method("set_temporary_grace"):
+			wm.set_temporary_grace(new_w.attachments.filter(func(a): return a.quick_grip)[0].quick_grip_iframes)
+
+	active_slot = slot
+	_update_fire_timer()
+	_update_weapon_model()
+	_emit_weapon_state()
+
+
+func give_weapon(weapon_data: WeaponData, slot: int) -> void:
+	if slot >= MAX_WEAPONS:
+		return
+	weapons[slot] = WeaponInstance.new(weapon_data)
+	_emit_weapon_state()
+
+
+func get_active_weapon() -> WeaponInstance:
+	return weapons[active_slot]
+
+
+# ─── FIRING ───────────────────────────────────────────────────────────────────
+
+func _fire() -> void:
+	var w := get_active_weapon()
+	if not w:
+		return
+
+	state = State.FIRING
+	can_fire = false
+	fire_timer.start()
+
+	var cam := get_viewport().get_camera_3d()
+	if not cam:
+		return
+
+	var pellets := w.get_pellets()
+	var cam_from := cam.global_position
+	var cam_forward := -cam.global_transform.basis.z
+
+	for _p in pellets:
+		var shoot_dir := _get_shoot_direction(cam_forward, cam, w)
+		var hit_result := _raycast(cam_from, shoot_dir)
+		_process_hit(hit_result, shoot_dir, cam_from, w)
+
+	# Consume bullet (Double Feed: 2 per shot)
+	var bullets_to_consume := 2 if w.has_attachment(&"Double Feed") else 1
+	w.consume_bullet(bullets_to_consume)
+
+	# Machine Pistol speed bonus
+	if w.data.move_speed_bonus_while_firing > 0 and _player:
+		EventBus.player_speed_changed.emit(1.0 + w.data.move_speed_bonus_while_firing)
+
+	_do_viewmodel_kick()
+	EventBus.weapon_fired_new.emit(w)
+	_emit_weapon_state()
+
+
+func _get_shoot_direction(base_dir: Vector3, cam: Camera3D, w: WeaponInstance) -> Vector3:
+	var is_ads := _player.has_method("get_is_ads") and _player.get_is_ads()
+	var spread := 0.0
+
+	# Holo Sight: zero spread in ADS
+	var has_holo := false
+	for att in w.attachments:
+		if att.holo_sight: has_holo = true
+
+	if is_ads:
+		spread = 0.0 if has_holo else w.data.ads_spread
+	elif _player.has_method("get_is_moving") and _player.get_is_moving():
+		spread = w.data.move_spread
+	else:
+		spread = w.data.hip_spread
+
+	if spread <= 0:
+		return base_dir
+	var dir := base_dir.rotated(cam.global_transform.basis.x, randf_range(-deg_to_rad(spread), deg_to_rad(spread)))
+	return dir.rotated(cam.global_transform.basis.y, randf_range(-deg_to_rad(spread), deg_to_rad(spread))).normalized()
+
+
+func _raycast(from: Vector3, direction: Vector3) -> Dictionary:
+	var space := get_world_3d().direct_space_state
+	var query := PhysicsRayQueryParameters3D.create(from, from + direction * MAX_RAY_DISTANCE, 0b0101)
+	return space.intersect_ray(query)
+
+
+func _process_hit(hit: Dictionary, shoot_dir: Vector3, cam_from: Vector3, w: WeaponInstance) -> void:
+	var damage := _calc_damage(w)
+
+	if not hit.is_empty() and hit.collider.has_method("take_bullet_hit"):
+		var collider = hit.collider
+		var hit_pos: Vector3 = hit.position
+
+		# Apply magazine spell status effects
+		_apply_mag_spell_on_hit(collider, damage, w)
+
+		# Apply attachment effects
+		_apply_attachment_effects(collider, hit_pos, shoot_dir, damage, w)
+
+		# Deal damage
+		collider.take_bullet_hit_new(damage, w, self)
+		EventBus.hit_confirmed_new.emit(hit_pos, w, collider)
+
+		# Vampiric Barrel
+		for att in w.attachments:
+			if att.vampiric_barrel and _player and _player.has_method("heal"):
+				_player.heal(att.vampiric_hp_per_hit)
+
+		# Vampiric Aura
+		if _vampiric_active and _player and _player.has_method("heal"):
+			_player.heal(damage * _vampiric_ratio)
+
+		# Piercing
+		if _has_attachment(w, &"Piercing Barrel"):
+			_pierce_check(hit_pos, shoot_dir, damage, w)
+	else:
+		var miss_pos := cam_from + shoot_dir * MAX_RAY_DISTANCE
+		EventBus.hit_missed_new.emit(miss_pos, w)
+
+
+func _calc_damage(w: WeaponInstance) -> float:
+	var dmg := w.get_effective_damage()
+	if _war_cry_active:
+		dmg *= (1.0 + _war_cry_bonus)
+	return dmg
+
+
+func _apply_mag_spell_on_hit(enemy: Node3D, damage: float, w: WeaponInstance) -> void:
+	# Check both weapons if elemental converter is present
+	var spells_to_apply: Array[WeaponInstance] = [w]
+	for slot in MAX_WEAPONS:
+		if weapons[slot] and weapons[slot] != w:
+			for att in weapons[slot].attachments:
+				if att.elemental_converter:
+					spells_to_apply.append(weapons[slot])
+					break
+
+	for wi in spells_to_apply:
+		if not wi.active_mag_spell:
+			continue
+
+		# Chaos Engine overrides
+		var spell_to_use := wi.active_mag_spell
+		for att in wi.attachments:
+			if att.chaos_engine and randf() < att.chaos_chance:
+				spell_to_use = _get_random_mag_spell()
+				break
+
+		if not spell_to_use:
+			continue
+
+		var status: StatusEffectComponent = enemy.get_node_or_null("StatusEffectComponent")
+		if not status:
+			continue
+
+		if spell_to_use.mag_poison_stacks_per_hit > 0:
+			status.apply_poison(spell_to_use.mag_poison_stacks_per_hit)
+		if spell_to_use.mag_apply_burn:
+			status.apply_burn()
+		if spell_to_use.mag_apply_shock:
+			status.apply_shock()
+		if spell_to_use.mag_apply_slow:
+			status.apply_slow()
+		if spell_to_use.mag_explosive:
+			_spawn_mag_explosion(enemy.global_position, damage * spell_to_use.mag_explosive_damage_fraction, spell_to_use.mag_explosive_radius, wi.active_mag_spell)
+
+
+func _apply_attachment_effects(enemy: Node3D, hit_pos: Vector3, shoot_dir: Vector3, damage: float, w: WeaponInstance) -> void:
+	for att in w.attachments:
+		if att.explosive_tips:
+			_spawn_explosion(hit_pos, damage * att.explosive_damage_fraction, att.explosive_radius, w)
+		if att.chain_link:
+			_apply_chain(enemy, damage * att.chain_damage_fraction, att.chain_range, w)
+		if att.chaos_engine:
+			pass  # Handled in _apply_mag_spell_on_hit
+
+
+func _pierce_check(from: Vector3, dir: Vector3, damage: float, w: WeaponInstance) -> void:
+	var space := get_world_3d().direct_space_state
+	var query := PhysicsRayQueryParameters3D.create(from + dir * 0.1, from + dir * MAX_RAY_DISTANCE, 0b0100)
+	var result := space.intersect_ray(query)
+	if result and result.collider.has_method("take_bullet_hit_new"):
+		result.collider.take_bullet_hit_new(damage, w, self)
+		_apply_mag_spell_on_hit(result.collider, damage, w)
+		EventBus.hit_confirmed_new.emit(result.position, w, result.collider)
+
+
+func _apply_chain(source: Node3D, chain_damage: float, chain_range: float, w: WeaponInstance) -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy) or enemy == source:
+			continue
+		if enemy.global_position.distance_to(source.global_position) <= chain_range:
+			if enemy.has_method("take_bullet_hit_new"):
+				enemy.take_bullet_hit_new(chain_damage, w, self)
+				_apply_mag_spell_on_hit(enemy, chain_damage, w)
+			break  # chain to 1 closest
+
+
+func _spawn_explosion(pos: Vector3, damage: float, radius: float, w: WeaponInstance) -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy):
+			continue
+		if enemy.global_position.distance_to(pos) <= radius:
+			if enemy.has_method("take_damage"):
+				enemy.take_damage(damage)
+			_apply_mag_spell_on_hit(enemy, damage, w)
+
+
+func _spawn_mag_explosion(pos: Vector3, damage: float, radius: float, spell: FunctionCardData) -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy) or enemy.global_position.distance_to(pos) > radius:
+			continue
+		if enemy.has_method("take_damage"):
+			enemy.take_damage(damage)
+
+
+func _has_attachment(w: WeaponInstance, name: StringName) -> bool:
+	for att in w.attachments:
+		if att.attachment_name == name:
+			return true
+	return false
+
+
+func _get_random_mag_spell() -> FunctionCardData:
+	var pool: Array[FunctionCardData] = [
+		preload("res://data/function_cards/poison_magazine.tres"),
+		preload("res://data/function_cards/fire_magazine.tres"),
+		preload("res://data/function_cards/shock_magazine.tres"),
+		preload("res://data/function_cards/frost_magazine.tres"),
+		preload("res://data/function_cards/explosive_magazine.tres"),
+	]
+	return pool[randi() % pool.size()]
+
+
+# ─── SPELL HAND ───────────────────────────────────────────────────────────────
+
+func _init_spell_hand(spells: Array[FunctionCardData]) -> void:
+	spell_hand.clear()
+	spell_consumed.clear()
+	for sp in spells:
+		spell_hand.append(sp)
+		spell_consumed.append(false)
+	while spell_hand.size() < SPELL_SLOTS:
+		spell_hand.append(null)
+		spell_consumed.append(true)
+	active_spell_index = _find_next_spell(0)
+	_emit_spell_state()
+
+
+func _find_next_spell(from: int) -> int:
+	for i in range(from, spell_hand.size()):
+		if not spell_consumed[i] and spell_hand[i] != null:
+			return i
+	return -1
+
+
+func _cast_active_spell() -> void:
+	if active_spell_index < 0:
+		return
+	var spell: FunctionCardData = spell_hand[active_spell_index]
+	if not spell:
+		return
+
+	spell_consumed[active_spell_index] = true
+	active_spell_index = _find_next_spell(active_spell_index + 1)
+	_emit_spell_state()
+
+	EventBus.spell_cast_new.emit(spell)
+	_execute_spell(spell)
+
+
+func _execute_spell(spell: FunctionCardData) -> void:
+	# ── Magazine Spells ──
+	if spell.is_magazine_spell:
+		_cast_magazine_spell(spell)
+		return
+
+	# ── Character Spells ──
+	if spell.is_dash: _cast_dash(spell)
+	elif spell.is_blink: _cast_blink(spell)
+	elif spell.is_shield_wall: _cast_shield_wall(spell)
+	elif spell.is_iron_skin: _cast_iron_skin(spell)
+	elif spell.is_adrenaline: _cast_adrenaline(spell)
+	elif spell.is_vampiric_aura: _cast_vampiric_aura(spell)
+	elif spell.is_war_cry: _cast_war_cry(spell)
+	elif spell.is_time_warp: _cast_time_warp(spell)
+
+	# ── Execute Spells ──
+	elif spell.is_detonator: _cast_detonator(spell)
+	elif spell.is_chain_detonation: _cast_chain_detonation(spell)
+	elif spell.is_purge: _cast_purge(spell)
+	elif spell.is_shatter: _cast_shatter(spell)
+
+	# ── Tactical Spells ──
+	elif spell.is_spotter: _cast_spotter(spell)
+	elif spell.is_reload_surge: _cast_reload_surge()
+	elif spell.is_magnetize: _cast_magnetize(spell)
+
+
+func add_spell_to_hand(spell: FunctionCardData) -> void:
+	## Add new spell; if full, caller should offer slot swap first
+	for i in spell_hand.size():
+		if spell_hand[i] == null or spell_consumed[i]:
+			spell_hand[i] = spell
+			spell_consumed[i] = false
+			if active_spell_index < 0:
+				active_spell_index = i
+			_emit_spell_state()
+			return
+	# Hand full — replace last consumed slot
+	for i in range(spell_hand.size() - 1, -1, -1):
+		if spell_consumed[i]:
+			spell_hand[i] = spell
+			spell_consumed[i] = false
+			if active_spell_index < 0:
+				active_spell_index = i
+			_emit_spell_state()
+			return
+
+
+# ─── MAGAZINE SPELL IMPLEMENTATIONS ──────────────────────────────────────────
+
+func _cast_magazine_spell(spell: FunctionCardData) -> void:
+	var w := get_active_weapon()
+	if not w:
+		return
+
+	# Elemental Converter: apply to both weapons
+	var targets: Array[WeaponInstance] = [w]
+	for wi in weapons:
+		if wi and wi != w:
+			for att in wi.attachments:
+				if att.elemental_converter:
+					targets.append(wi)
+					break
+
+	for wi in targets:
+		wi.active_mag_spell = spell
+
+	EventBus.mag_spell_activated.emit(spell, w)
+
+
+# ─── CHARACTER SPELL IMPLEMENTATIONS ─────────────────────────────────────────
+
+func _cast_dash(spell: FunctionCardData) -> void:
+	if not _player: return
+	var move_dir := Vector3.ZERO
+	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	if input.length() > 0.1:
+		move_dir = (_player.global_transform.basis * Vector3(input.x, 0, input.y)).normalized()
+	else:
+		move_dir = -_player.global_transform.basis.z  # forward
+	_player.global_position += move_dir * spell.dash_distance
+	var wm := get_tree().get_first_node_in_group("wave_manager")
+	if wm and wm.has_method("set_temporary_grace"):
+		wm.set_temporary_grace(spell.dash_iframes)
+
+
+func _cast_blink(spell: FunctionCardData) -> void:
+	if not _player: return
+	var cam := get_viewport().get_camera_3d()
+	if not cam: return
+	var space := get_world_3d().direct_space_state
+	var from := cam.global_position
+	var dir := -cam.global_transform.basis.z
+	var q := PhysicsRayQueryParameters3D.create(from, from + dir * spell.blink_range, 0b0001)
+	var r := space.intersect_ray(q)
+	_player.global_position = r.position + r.normal * 0.5 if r else from + dir * spell.blink_range
+
+
+func _cast_shield_wall(spell: FunctionCardData) -> void:
+	if not _player: return
+	if _shield_wall_node and is_instance_valid(_shield_wall_node):
+		_shield_wall_node.queue_free()
+	# Spawn a static wall 2m in front of player
+	var wall := StaticBody3D.new()
+	wall.collision_layer = 1
+	wall.collision_mask = 0
+	var col := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(2.5, 2.0, 0.2)
+	col.shape = shape
+	wall.add_child(col)
+	var mesh := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(2.5, 2.0, 0.2)
+	mesh.mesh = box
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0, 0.9, 0.9, 0.4)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0, 0.9, 0.9)
+	mesh.set_surface_override_material(0, mat)
+	wall.add_child(mesh)
+	var wall_pos := _player.global_position - _player.global_transform.basis.z * 2.0
+	wall_pos.y = _player.global_position.y + 0.5
+	wall.global_position = wall_pos
+	wall.global_rotation.y = _player.global_rotation.y
+	get_tree().current_scene.add_child(wall)
+	_shield_wall_node = wall
+	get_tree().create_timer(spell.shield_wall_duration).timeout.connect(func():
+		if is_instance_valid(wall): wall.queue_free()
+	)
+
+
+func _cast_iron_skin(spell: FunctionCardData) -> void:
+	_iron_skin_hits_remaining = spell.iron_skin_hits
+	_iron_skin_timer = spell.iron_skin_duration
+	EventBus.iron_skin_activated.emit(spell.iron_skin_hits)
+
+
+func _cast_adrenaline(spell: FunctionCardData) -> void:
+	_adrenaline_active = true
+	_adrenaline_timer = spell.adrenaline_duration
+	_adrenaline_fire_bonus = spell.adrenaline_fire_rate_bonus
+	_update_fire_timer()
+	if _player: EventBus.player_speed_changed.emit(1.0 + spell.adrenaline_move_bonus)
+
+
+func _cast_vampiric_aura(spell: FunctionCardData) -> void:
+	_vampiric_active = true
+	_vampiric_timer = spell.vampiric_duration
+	_vampiric_ratio = spell.vampiric_ratio
+
+
+func _cast_war_cry(spell: FunctionCardData) -> void:
+	_war_cry_active = true
+	_war_cry_timer = spell.war_cry_duration
+	_war_cry_bonus = spell.war_cry_damage_bonus
+
+
+func _cast_time_warp(spell: FunctionCardData) -> void:
+	_time_warp_active = true
+	_time_warp_timer = spell.time_warp_duration
+	_set_enemy_time_warp(spell.time_warp_speed_fraction)
+	get_tree().create_timer(spell.time_warp_duration).timeout.connect(func():
+		_time_warp_active = false
+		_set_enemy_time_warp(1.0)
+	)
+
+
+func _set_enemy_time_warp(speed_scale: float) -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(enemy):
+			enemy.process_mode = Node.PROCESS_MODE_INHERIT
+			# Scale enemy process via time scale on their node
+			if enemy.has_method("set_time_scale"):
+				enemy.set_time_scale(speed_scale)
+			else:
+				# fallback: modify speed directly
+				if enemy.has_method("set_speed_scale"):
+					enemy.set_speed_scale(speed_scale)
+
+
+# ─── EXECUTE SPELL IMPLEMENTATIONS ───────────────────────────────────────────
+
+func _hitscan_enemy() -> Node3D:
+	var cam := get_viewport().get_camera_3d()
+	if not cam: return null
+	var space := get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(cam.global_position, cam.global_position + (-cam.global_transform.basis.z) * MAX_RAY_DISTANCE, 0b0100)
+	var r := space.intersect_ray(q)
+	return r.collider if r and r.collider.has_method("take_damage") else null
+
+
+func _cast_detonator(spell: FunctionCardData) -> void:
+	var enemy := _hitscan_enemy()
+	if not enemy: return
+	var status: StatusEffectComponent = enemy.get_node_or_null("StatusEffectComponent")
+	if not status or status.poison_stacks <= 0:
+		EventBus.spell_detonator_hit.emit(enemy, 0.0, false)
+		return
+	var has_burn := status.is_burning
+	var multiplier := spell.detonator_base_multiplier * 2.0 if has_burn else spell.detonator_base_multiplier
+	var stacks := status.poison_stacks
+	status.detonate_poison()
+	var bonus := stacks * multiplier
+	enemy.take_damage(bonus)
+	EventBus.enemy_poison_detonated.emit(enemy, stacks, bonus, has_burn)
+	EventBus.spell_detonator_hit.emit(enemy, bonus, has_burn)
+
+
+func _cast_chain_detonation(spell: FunctionCardData) -> void:
+	var primary := _hitscan_enemy()
+	if not primary: return
+	var status: StatusEffectComponent = primary.get_node_or_null("StatusEffectComponent")
+	if not status or status.poison_stacks <= 0: return
+	var has_burn := status.is_burning
+	var stacks := status.poison_stacks
+	# Contagion combo: Poison + Shock = 100% spread instead of 50%
+	var spread_frac := spell.chain_det_spread_fraction
+	var primary_status := primary.get_node_or_null("StatusEffectComponent") as StatusEffectComponent
+	if primary_status and primary_status.is_shocked:
+		spread_frac = 1.0  # Contagion
+		EventBus.combo_triggered.emit("CONTAGION", primary.global_position)
+
+	var multiplier := spell.detonator_base_multiplier * 2.0 if has_burn else spell.detonator_base_multiplier
+	status.detonate_poison()
+	var bonus := stacks * multiplier
+	primary.take_damage(bonus)
+	EventBus.enemy_poison_detonated.emit(primary, stacks, bonus, has_burn)
+	# Spread stacks to nearby enemies
+	var spread_stacks := int(stacks * spread_frac)
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy) or enemy == primary: continue
+		if enemy.global_position.distance_to(primary.global_position) <= spell.chain_det_spread_radius:
+			var es: StatusEffectComponent = enemy.get_node_or_null("StatusEffectComponent")
+			if es: es.apply_poison(spread_stacks)
+
+
+func _cast_purge(spell: FunctionCardData) -> void:
+	var enemy := _hitscan_enemy()
+	if not enemy: return
+	var status: StatusEffectComponent = enemy.get_node_or_null("StatusEffectComponent")
+	if not status: return
+	var type_count := 0
+	var total_stacks := status.poison_stacks
+	if status.poison_stacks > 0: type_count += 1
+	if status.is_burning: type_count += 1
+	if status.is_shocked: type_count += 1
+	if status.is_slowed: type_count += 1
+	if status.is_marked: type_count += 1
+	if status.is_frozen: type_count += 1
+	var damage := type_count * spell.purge_damage_per_type + total_stacks * spell.purge_damage_per_stack
+	# Consume all statuses
+	status.clear_all()
+	enemy.take_damage(damage)
+
+
+func _cast_shatter(spell: FunctionCardData) -> void:
+	var enemy := _hitscan_enemy()
+	if not enemy: return
+	var status: StatusEffectComponent = enemy.get_node_or_null("StatusEffectComponent")
+	if not status or not status.is_slowed:
+		return  # Wasted — target not slowed
+	# Brittle combo: if already frozen... not applicable (shatter creates freeze)
+	status.apply_freeze(spell.shatter_freeze_duration)
+	enemy.take_damage(spell.shatter_damage)
+	EventBus.combo_triggered.emit("SHATTER", enemy.global_position)
+
+
+# ─── TACTICAL SPELL IMPLEMENTATIONS ──────────────────────────────────────────
+
+func _cast_spotter(spell: FunctionCardData) -> void:
+	var enemy := _hitscan_enemy()
+	if not enemy: return
+	var status: StatusEffectComponent = enemy.get_node_or_null("StatusEffectComponent")
+	if status: status.apply_mark(spell.mark_duration)
+
+
+func _cast_reload_surge() -> void:
+	## Instant reload that PRESERVES the active magazine spell
+	var w := get_active_weapon()
+	if not w: return
+	var saved_spell := w.active_mag_spell  # preserve
+	w.reload_surge()
+	w.active_mag_spell = saved_spell  # restore
+	_emit_weapon_state()
+	EventBus.weapon_reload_finished.emit()
+
+
+func _cast_magnetize(spell: FunctionCardData) -> void:
+	_magnetize_active = true
+	_magnetize_timer = spell.magnetize_duration
+	_magnetize_pull = spell.magnetize_pull_per_sec
+	_magnetize_radius = spell.magnetize_radius
+
+
+func _pull_enemies_toward_player(delta: float) -> void:
+	if not _player: return
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy): continue
+		var dist := enemy.global_position.distance_to(_player.global_position)
+		if dist <= _magnetize_radius and dist > 1.0:
+			var dir := (_player.global_position - enemy.global_position).normalized()
+			enemy.global_position += dir * _magnetize_pull * delta
+
+
+# ─── RELOAD ───────────────────────────────────────────────────────────────────
+
+func start_reload() -> void:
+	if state == State.RELOADING: return
+	var w := get_active_weapon()
+	if not w: return
+	state = State.RELOADING
+	can_fire = false
+	reload_timer.wait_time = w.get_reload_time()
+	reload_timer.start()
+	EventBus.weapon_reload_started.emit()
+
+
+func _on_reload_finished() -> void:
+	var w := get_active_weapon()
+	if w: w.reload()  # clears mag spell
+	state = State.IDLE
+	can_fire = true
+	# Refill spell hand
+	_refill_spell_hand()
+	_update_fire_timer()
+	_emit_weapon_state()
+	_emit_spell_state()
+	EventBus.weapon_reload_finished.emit()
+
+
+func _refill_spell_hand() -> void:
+	## On reload, consumed spells become available again (represents "drawing new cards")
+	for i in spell_hand.size():
+		if spell_consumed[i] and spell_hand[i] != null:
+			spell_consumed[i] = false
+	active_spell_index = _find_next_spell(0)
+
+
+func is_reloading() -> bool:
+	return state == State.RELOADING
+
+
+func absorb_damage(amount: float) -> float:
+	## Iron Skin: absorb hits regardless of damage
+	if _iron_skin_hits_remaining > 0:
+		_iron_skin_hits_remaining -= 1
+		if _iron_skin_hits_remaining <= 0:
+			_iron_skin_timer = 0.0
+			EventBus.iron_skin_depleted.emit()
+		return 0.0
+	return amount
+
+
+# ─── ATTACHMENT MANAGEMENT ────────────────────────────────────────────────────
+
+func add_attachment_to_slot(att: AttachmentData, slot: int) -> void:
+	if slot >= MAX_WEAPONS or not weapons[slot]: return
+	weapons[slot].add_attachment(att)
+	_update_fire_timer()
+	_emit_weapon_state()
+
+
+# ─── TIMER / MODEL HELPERS ────────────────────────────────────────────────────
+
+func _update_fire_timer() -> void:
+	var w := get_active_weapon()
+	if not w: return
+	var rate := w.get_fire_rate()
+	if _adrenaline_active:
+		rate *= (1.0 + _adrenaline_fire_bonus)
+	fire_timer.wait_time = 1.0 / rate
+
+
+func _on_fire_timeout() -> void:
+	can_fire = true
+	state = State.IDLE
+	# Stop Machine Pistol speed bonus when not firing
+	var w := get_active_weapon()
+	if w and w.data.move_speed_bonus_while_firing > 0 and _player:
+		EventBus.player_speed_changed.emit(1.0)
+
+
+func _do_viewmodel_kick() -> void:
+	var model := weapon_models_node.get_child(active_slot) if weapon_models_node.get_child_count() > active_slot else null
+	if not model: return
+	var rest := Vector3.ZERO
+	var kick := Vector3(0, 0, 0.05)
+	var tween := create_tween()
+	tween.tween_property(model, "position", kick, 0.05)
+	tween.tween_property(model, "position", rest, 0.1)
+
+
+func _update_weapon_model() -> void:
+	# Show only active weapon model
+	for i in weapon_models_node.get_child_count():
+		weapon_models_node.get_child(i).visible = (i == active_slot)
+
+
+func _emit_weapon_state() -> void:
+	EventBus.weapon_state_changed.emit(weapons, active_slot)
+
+
+func _emit_spell_state() -> void:
+	EventBus.spell_hand_state_changed.emit(spell_hand, spell_consumed, active_spell_index)
+
+
+# ─── ENEMY TIME SCALE ────────────────────────────────────────────────────────
+
+func _check_combo_brittle(enemy: Node3D) -> void:
+	var status: StatusEffectComponent = enemy.get_node_or_null("StatusEffectComponent")
+	if status and status.is_frozen:
+		# Brittle: frozen enemies take 2x damage
+		pass  # multiplier applied in enemy_base.take_bullet_hit_new

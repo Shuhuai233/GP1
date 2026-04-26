@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AttachmentData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/attachment_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+attachment_name = &"Quick Grip"
+category = 3
+description = "Instant weapon switch + 0.3s invincibility on switch."
+color = Color(1, 1, 1, 1)
+quick_grip = true
+quick_grip_iframes = 0.3

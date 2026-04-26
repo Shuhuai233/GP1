@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"Time Warp"
+category = 1
+description = "4s: all enemies move and attack at 30% speed."
+color = Color(0.7, 0.5, 1, 1)
+is_time_warp = true
+time_warp_duration = 4.0
+time_warp_speed_fraction = 0.3

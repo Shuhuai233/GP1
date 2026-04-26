@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FunctionCardData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/function_card_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+card_name = &"War Cry"
+category = 1
+description = "8s: all weapon damage +50%."
+color = Color(0.9, 0.7, 0.1, 1)
+is_war_cry = true
+war_cry_duration = 8.0
+war_cry_damage_bonus = 0.5

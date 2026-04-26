@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AttachmentData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/attachment_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+attachment_name = &"Split Barrel"
+category = 0
+description = "Bullets split into 3 projectiles after 5m. Each at 50% damage."
+color = Color(1, 0.8, 0.3, 1)
+split_bullet = true
+split_count = 3
+split_damage_fraction = 0.5
+split_travel_distance = 5.0

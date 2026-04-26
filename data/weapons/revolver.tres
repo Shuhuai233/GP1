@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+weapon_name = &"Revolver"
+weapon_type = 0
+description = "The hand cannon. 12 damage per bullet. Every shot sounds like thunder."
+fire_rate = 3.0
+magazine_size = 18
+damage_per_bullet = 12.0
+reload_time = 2.0
+pellets_per_shot = 1
+ads_fov = 75.0
+headshot_multiplier = 2.0
+hip_spread = 0.0
+move_spread = 1.0
+ads_spread = 0.0
+move_speed_bonus_while_firing = 0.0
+color = Color(0.8, 0.6, 0.2, 1)
+model_scene_path = "res://scenes/weapons/revolver.tscn"
