@@ -89,15 +89,17 @@ Abilities the player casts with the F key. Two categories:
 | Adrenaline | Pink | +50% move speed, +30% fire rate for 6 sec. | 6 sec | The "go fast" button. Everything speeds up. Pairs with SMG for maximum spray. |
 | Vampiric Aura | Dark Red | 5 sec: all weapon damage heals player 40% of damage dealt. | 5 sec | Aggressive healing. Shoot enemies to heal. Rewards offense over hiding. |
 
-### Category 2: Magazine Spells (load special ammo into weapon)
+### Category 2: Magazine Spells (apply special ammo to current magazine)
 
-| Card | Color | Effect | Duration | Design intent |
-|---|---|---|---|---|
-| Poison Magazine | Green | Load poison ammo. Every bullet applies +2 poison stacks. | Until reload | Stack poison on targets. Pairs with Detonator for execute combo. |
-| Fire Magazine | Orange | Load incendiary ammo. Every bullet applies Burn (+20% dmg taken). | Until reload | Universal damage amplifier. Everything you shoot takes more damage. |
-| Shock Magazine | Electric Blue | Load shock ammo. Every bullet chains to 1 nearby enemy for 40% dmg. | Until reload | AoE through shooting. Hit one, damage two. |
-| Frost Magazine | Cyan-White | Load cryo ammo. Every bullet applies Slow (-50% move speed). | Until reload | Crowd control. Rushers stop rushing. Big Eyes can't reposition. |
-| Explosive Magazine | Dark Orange | Load explosive ammo. Every bullet creates 2m AoE on impact. | Until reload | Turn any weapon into an area damage weapon. SMG + Explosive = carpet bombing. |
+**Duration rule:** Applies to all REMAINING bullets in the current magazine. Reload clears the effect back to normal ammo. This creates a timing decision: cast right after reload (full mag = max value) or mid-mag when you need it NOW.
+
+| Card | Color | Effect | Design intent |
+|---|---|---|---|
+| Poison Magazine | Green | Remaining bullets in current mag apply +2 poison stacks per hit. | Stack poison on targets. Full SMG mag = 60 poison bullets. Half-empty Sniper = 2 poison bullets. Timing matters. |
+| Fire Magazine | Orange | Remaining bullets in current mag apply Burn (+20% dmg taken, refreshes). | Universal damage amp. Cast early in mag for max burn uptime. |
+| Shock Magazine | Electric Blue | Remaining bullets in current mag chain to 1 nearby enemy for 40% dmg. | AoE through shooting. Each bullet hits 2 targets. |
+| Frost Magazine | Cyan-White | Remaining bullets in current mag apply Slow (-50% move speed). | Crowd control. Rushers stop rushing. Cast when they spawn. |
+| Explosive Magazine | Dark Orange | Remaining bullets in current mag create 2m AoE on impact. | Any weapon becomes AoE. Shotgun + Explosive = room clear. |
 
 ### Category 3: Execute / Trigger Spells (consume status for burst)
 
