@@ -18,7 +18,8 @@ var current_hp: float
 var is_dead: bool = false
 var player: Node3D = null
 var attack_timer: float = 0.0
-var gravity: float = 20.0  # GDD §6: 20 m/s²
+var stun_timer: float = 0.0
+var gravity: float = 20.0
 
 
 func _ready() -> void:
@@ -27,7 +28,6 @@ func _ready() -> void:
 	collision_layer = 4
 	collision_mask = 5
 
-	# Connect status signals to UI
 	if status:
 		status.poison_changed.connect(_on_poison_changed)
 		status.burn_changed.connect(_on_burn_changed)
@@ -35,6 +35,13 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
+		return
+
+	if stun_timer > 0:
+		stun_timer -= delta
+		move_and_slide()  # apply gravity but no behavior
+		if not is_on_floor():
+			velocity.y -= gravity * delta
 		return
 
 	if not is_on_floor():
@@ -53,25 +60,44 @@ func _update_behavior(_delta: float) -> void:
 	pass
 
 
-func take_bullet_hit(card: CardData) -> void:
+func take_bullet_hit(card: CardData, weapon: Node3D = null) -> void:
 	if is_dead:
 		return
 
+	# Base damage
 	var damage := card.damage_per_bullet
-	damage *= status.get_damage_multiplier()
 
+	# Headhunter: override headshot multiplier — simplified random 20% chance for Gate 1
+	if card.headshot_multiplier > 1.5 and randf() < 0.2:
+		damage = damage / 1.5 * card.headshot_multiplier  # replace default 1.5x with card's multiplier
+
+	# Weapon damage modifiers (war cry, megashot, iron skin, tracer, tempo)
+	if weapon and weapon.has_method("get_damage_for_bullet"):
+		damage = weapon.get_damage_for_bullet(damage, card, self)
+	elif weapon and weapon.has_method("get_tempo_bonus"):
+		damage += weapon.get_tempo_bonus(card)
+	else:
+		damage *= status.get_damage_multiplier()
+
+	# Apply status effects from this card
 	match card.status_effect:
 		CardData.StatusEffectType.POISON:
 			status.apply_poison(card.status_stacks_per_hit)
 		CardData.StatusEffectType.BURN:
 			status.apply_burn()
+		CardData.StatusEffectType.SHOCK:
+			status.apply_shock()
 
-	# Legacy: firing-card detonator path (unused now, function cards handle this)
-	if card.consumes_poison and status.poison_stacks > 0:
-		damage += status.detonate_poison() * card.poison_consume_multiplier
+	# Spread stacks on kill (Plague Round) — registered via on_death
+	# Armor piercing handled in damage (no resistance system yet)
+	# Explosive AoE handled in weapon._fire_single_ray
 
 	take_damage(damage)
 	_flash_hit()
+
+	# Notify weapon of the confirmed hit (for drain, vampiric, tracer, etc.)
+	if weapon and weapon.has_method("notify_hit"):
+		weapon.notify_hit(self, damage, card)
 
 
 func take_damage(amount: float) -> void:
@@ -86,6 +112,15 @@ func take_damage(amount: float) -> void:
 
 	if current_hp <= 0:
 		die()
+
+
+func apply_stun(duration: float) -> void:
+	stun_timer = maxf(stun_timer, duration)
+	velocity = Vector3.ZERO
+
+
+func get_hp_percent() -> float:
+	return current_hp / max_hp
 
 
 func die() -> void:
@@ -123,7 +158,6 @@ func set_player_target(p: Node3D) -> void:
 
 
 func _is_grace_period() -> bool:
-	## Check if the wave manager's grace period is active
 	var wm := get_tree().get_first_node_in_group("wave_manager")
 	if wm and wm.has_method("is_grace_period"):
 		return wm.is_grace_period()

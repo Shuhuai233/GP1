@@ -7,6 +7,7 @@ signal player_died()
 signal player_health_changed(current: float, max_hp: float)
 signal player_shield_changed(shield: float, max_shield: float)
 signal player_healed(amount: float)
+signal player_speed_changed(multiplier: float)  # for quicksilver / adrenaline
 
 # Weapon signals
 signal weapon_fired(card: Resource)
@@ -21,6 +22,14 @@ signal spell_hand_changed(spell_hand: Array, consumed: Array, active_index: int)
 signal spell_detonator_hit(enemy: Node3D, bonus_damage: float, toxic_fire: bool)
 signal spell_barrier_activated(shield_amount: float, duration: float)
 signal spell_flashfire_activated(enemies_hit: int)
+
+# Buff signals (for HUD / spell_hand_ui feedback)
+signal buff_war_cry_activated(multiplier: float)
+signal buff_overclock_activated(duration: float)
+signal buff_adrenaline_activated(duration: float)
+signal buff_fuel_activated(packs_remaining: int)
+signal buff_vampiric_burst_activated(duration: float)
+signal buff_megashot_ready()
 
 # Enemy signals
 signal enemy_damaged(enemy: Node3D, amount: float)

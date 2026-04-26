@@ -115,6 +115,13 @@ func _ready() -> void:
 	EventBus.enemy_died.connect(_on_enemy_killed)
 	EventBus.card_selection_started.connect(func(_c): is_selecting_card = true)
 	EventBus.card_selected.connect(func(_c): is_selecting_card = false)
+	EventBus.player_speed_changed.connect(_on_speed_changed)
+
+
+var _external_speed_multiplier: float = 1.0
+
+func _on_speed_changed(multiplier: float) -> void:
+	_external_speed_multiplier = multiplier
 
 
 func _on_enemy_killed(_enemy: Node3D) -> void:
@@ -215,6 +222,9 @@ func _physics_process(delta: float) -> void:
 		target_speed = walk_speed * ads_move_multiplier
 	else:
 		target_speed = walk_speed
+
+	# Apply external speed multiplier (Quicksilver, Adrenaline)
+	target_speed *= _external_speed_multiplier
 
 	# Sprint is forward-only: zero strafe and backward
 	if is_sprinting:

@@ -42,12 +42,57 @@ func _ready() -> void:
 	EventBus.enemy_poison_detonated.connect(_on_detonator_hit)
 
 	_offer_pool = [
-		preload("res://data/cards/venom_round.tres"),
-		preload("res://data/cards/incendiary_round.tres"),
+		# NEUTRAL firing
 		preload("res://data/cards/piercing_round.tres"),
-		preload("res://data/cards/detonator_round.tres"),
+		preload("res://data/cards/ricochet_round.tres"),
+		preload("res://data/cards/drain_round.tres"),
+		# NEUTRAL function
 		preload("res://data/cards/barrier.tres"),
+		preload("res://data/cards/vampiric_burst.tres"),
+		preload("res://data/cards/reload_surge.tres"),
+		# POWER firing
+		preload("res://data/cards/heavy_round.tres"),
+		preload("res://data/cards/armor_piercer.tres"),
+		preload("res://data/cards/headhunter_round.tres"),
+		preload("res://data/cards/explosive_round.tres"),
+		# POWER function
+		preload("res://data/cards/war_cry.tres"),
+		preload("res://data/cards/iron_skin.tres"),
+		preload("res://data/cards/megashot.tres"),
+		preload("res://data/cards/executioner.tres"),
+		# VENOM firing
+		preload("res://data/cards/venom_round.tres"),
+		preload("res://data/cards/toxic_needle.tres"),
+		preload("res://data/cards/plague_round.tres"),
+		# VENOM function
+		preload("res://data/cards/detonator_round.tres"),
+		preload("res://data/cards/toxin_bomb.tres"),
+		preload("res://data/cards/pandemic.tres"),
+		# BLAZE firing
+		preload("res://data/cards/incendiary_round.tres"),
+		preload("res://data/cards/ember_round.tres"),
+		preload("res://data/cards/magma_round.tres"),
+		# BLAZE function
 		preload("res://data/cards/flashfire.tres"),
+		preload("res://data/cards/inferno.tres"),
+		preload("res://data/cards/fuel.tres"),
+		# FLUX firing
+		preload("res://data/cards/quicksilver_round.tres"),
+		preload("res://data/cards/tempo_round.tres"),
+		preload("res://data/cards/tracer_round.tres"),
+		# FLUX function
+		preload("res://data/cards/phase_dash.tres"),
+		preload("res://data/cards/overclock.tres"),
+		preload("res://data/cards/adrenaline.tres"),
+		preload("res://data/cards/blink.tres"),
+		# SHOCK firing
+		preload("res://data/cards/volt_round.tres"),
+		preload("res://data/cards/arc_round.tres"),
+		preload("res://data/cards/static_round.tres"),
+		# SHOCK function
+		preload("res://data/cards/chain_lightning.tres"),
+		preload("res://data/cards/spotter.tres"),
+		preload("res://data/cards/emp_blast.tres"),
 	]
 
 
@@ -197,6 +242,17 @@ func _on_card_selected(_card: Resource) -> void:
 
 func is_grace_period() -> bool:
 	return _grace_active
+
+
+func set_temporary_grace(duration: float) -> void:
+	## Used by Phase Dash for brief invincibility during dash
+	_grace_active = true
+	get_tree().create_timer(duration).timeout.connect(func():
+		# Only clear if not in a wave-transition grace period
+		if not _grace_active:
+			return
+		_grace_active = false
+	)
 
 
 func _on_detonator_hit(_enemy: Node3D, _stacks: int, bonus_damage: float, _toxic_fire: bool) -> void:

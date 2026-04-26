@@ -1,19 +1,67 @@
-[gd_scene load_steps=2 format=3 uid="uid://weapon001"]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/weapon.gd" id="1"]
 
+[sub_resource type="BoxMesh" id="body_mesh"]
+size = Vector3(0.08, 0.05, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="body_mat"]
+albedo_color = Color(0.18, 0.14, 0.1, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="barrel_mesh"]
+top_radius = 0.012
+bottom_radius = 0.012
+height = 0.18
+
+[sub_resource type="StandardMaterial3D" id="barrel_mat"]
+albedo_color = Color(0.12, 0.12, 0.12, 1)
+roughness = 0.6
+metallic = 0.7
+
+[sub_resource type="CylinderMesh" id="cylinder_mesh"]
+top_radius = 0.025
+bottom_radius = 0.025
+height = 0.045
+
+[sub_resource type="StandardMaterial3D" id="cylinder_mat"]
+albedo_color = Color(0.2, 0.16, 0.1, 1)
+roughness = 0.7
+
 [node name="Weapon" type="Node3D"]
 script = ExtResource("1")
+
+[node name="WeaponModel" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="WeaponModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.08)
+mesh = SubResource("body_mesh")
+surface_material_override/0 = SubResource("body_mat")
+
+[node name="Barrel" type="MeshInstance3D" parent="WeaponModel"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.01, 0.01, -0.22)
+mesh = SubResource("barrel_mesh")
+surface_material_override/0 = SubResource("barrel_mat")
+
+[node name="Cylinder" type="MeshInstance3D" parent="WeaponModel"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.032, 0, -0.06)
+mesh = SubResource("cylinder_mesh")
+surface_material_override/0 = SubResource("cylinder_mat")
+
+[node name="MuzzleFlash" type="OmniLight3D" parent="WeaponModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -0.32)
+light_energy = 0.0
+omni_range = 1.5
 
 [node name="RayCast3D" type="RayCast3D" parent="."]
 target_position = Vector3(0, 0, -100)
 collision_mask = 5
 
 [node name="MuzzlePoint" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -0.32)
 
 [node name="FireTimer" type="Timer" parent="."]
-wait_time = 0.5
+wait_time = 0.33
 one_shot = true
 
 [node name="ReloadTimer" type="Timer" parent="."]
