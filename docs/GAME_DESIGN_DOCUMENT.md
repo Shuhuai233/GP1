@@ -33,16 +33,19 @@
 |---|---|
 | Fire gun | Left Click (semi-auto) |
 | Aim down sights (ADS) | Right Click (hold) |
-| Trigger spell | F key |
-| Reload (both hands) | R key |
-| Inspect deck | Tab (pauses game) |
-| Switch weapon | Scroll wheel or 1-4 number keys |
+| Cast selected spell | F key |
+| Cycle spell hand left | Q |
+| Cycle spell hand right | E |
+| Dash shortcut | Double-tap Shift (if Dash card is in spell hand) |
+| Reload | R key |
+| Inspect loadout | Tab (pauses game) |
+| Switch weapon | Scroll wheel or 1/2 number keys |
 | Move | WASD |
 | Sprint | Shift (hold) |
 | Jump | Space |
 | Crouch | Ctrl (toggle) |
 
-Spells auto-advance: after using a spell, the next unconsumed spell becomes active. No manual cycling needed. Player just presses F when ready.
+Spell hand: 5 slots. Player cycles with Q/E to select which spell is active, then F to cast. Double-tap Shift is a shortcut specifically for Dash — if a Dash card exists anywhere in the spell hand, double-shift fires it without needing to select it first.
 
 ### Deck Structure
 - ONE shared deck containing both firing cards and function cards

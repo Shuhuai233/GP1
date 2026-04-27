@@ -289,7 +289,7 @@ Found between waves alongside weapons and attachments. All from the same pick-1-
 
 | # | Card | Color | Effect | Design intent |
 |---|---|---|---|---|
-| B1 | Dash | Light Gray | Instant dash in movement direction, 5m. Invincible for 0.2s. | The universal dodge. Escape melee, dodge beams, cross gaps. Every build wants this. |
+| B1 | Dash | Light Gray | Dash 3m in movement direction. 2 sec immunity after dash. See full spec below. | The universal dodge. Escape melee, dodge beams, reposition. Every build wants this. |
 | B2 | Blink | White-Blue | Teleport to crosshair position (max 15m). Instant. | Repositioning. Get to high ground. Teleport behind Big Eye. Creative movement. |
 | B3 | Shield Wall | Cyan | Project a barrier in front of you for 4 sec. Blocks all enemy projectiles. You can shoot through it. | Active defense. Plant it and fire through it. Blocks Grunt bullets and Big Eye beams. Positioning matters — it's directional. |
 | B4 | Iron Skin | Steel | Absorb next 3 hits regardless of damage. Lasts 8 sec or until 3 hits absorbed. | Hard defense. "I'm going to eat 3 shots and not care." Good for pushing through Rusher swarms. |
@@ -297,6 +297,48 @@ Found between waves alongside weapons and attachments. All from the same pick-1-
 | B6 | Vampiric Aura | Dark Red | 5 sec: all weapon damage heals player 40% of damage dealt. | Aggressive healing. Revolver doing 12 damage = 4.8 HP per hit. Sniper headshot = 36 HP healed. Rewards offense over hiding. |
 | B7 | War Cry | Gold | 8 sec: all weapon damage +50%. | The raw power buff. Every weapon, every bullet, +50%. Sniper headshot = 90 × 1.5 = 135. Stack with Fire Magazine (burn) for +50% and +20% simultaneously. |
 | B8 | Time Warp | Purple-White | 4 sec: all enemies move and attack at 30% speed. Player unaffected. | Bullet time. Dodge everything. Line up headshots. Cast right before Big Eye beam fires — now you have time to sidestep. The "oh shit" card for overwhelming situations. |
+
+### Dash — Full Specification
+
+**Requires:** Dash card in spell hand (left side, 5 slots).
+
+**How to trigger:**
+- Select Dash with Q/E (cycle through spell hand slots), then press F to cast
+- OR: double-tap Shift (sprint key) as a shortcut — if a Dash card exists anywhere in the spell hand, it fires automatically without needing to select it first
+
+**Behavior:**
+- Player dashes 3 meters in their current MOVEMENT direction (the direction they're pressing WASD, not where they're looking)
+- If no movement input: dash forward (facing direction)
+- Dash is instant (player teleports over 0.1s with motion blur trail, not a slow slide)
+- After dash completes: 2 seconds of immunity (no damage from any source)
+- Dash card is consumed on use (removed from spell hand until reload refills)
+
+**Collision:**
+- Dash respects collision — player cannot glitch through walls, floors, or cover
+- If dash would put player inside geometry: player stops at the last valid position before the collision
+- Player CAN dash off ledges (becomes airborne at end of dash)
+- Player CANNOT dash through enemies (enemies are solid — dash stops at enemy collision)
+
+**During dash:**
+- Player cannot fire weapon during the 0.1s dash movement
+- Player CAN fire immediately after dash completes (during the 2s immunity window)
+- Player can look/aim during dash (mouse input still works)
+
+**Immunity window (2 sec after dash):**
+- All incoming damage is negated (projectiles pass through, melee does 0 damage)
+- Visual: player model shimmers/ghosts with transparency to communicate "I'm immune"
+- Audio: subtle "whoosh" on dash, sustained low hum during immunity
+- Immunity does NOT make player intangible to geometry — only to damage
+- Immunity ends after exactly 2 seconds OR on next reload (whichever comes first)
+
+**Visual feedback:**
+- Dash trail: light gray streak along dash path, fades over 0.3s
+- Ghost effect during immunity: player model semi-transparent, subtle shimmer
+- Immunity end: brief flash when immunity expires (warns player it's over)
+
+**Why 3m and not 5m:** 3m is enough to escape Rusher melee range (0-5m) but not enough to cross the entire arena. It's a dodge, not a teleport. Blink (15m) is the repositioning card. Dash is the reactive survival card.
+
+**Why 2 sec immunity:** Long enough to reposition and start shooting after the dash. Short enough that it's not a "free pass" — 2 seconds goes fast under pressure. Creates a rhythm: dash → shoot during immunity → find cover before immunity ends.
 
 ---
 
