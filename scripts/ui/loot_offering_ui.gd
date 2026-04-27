@@ -15,6 +15,7 @@ var _weapon_controller: Node3D = null
 
 func _ready() -> void:
 	EventBus.loot_offering_started.connect(_on_offering_started)
+	EventBus.spell_hand_full_swap_requested.connect(_on_spell_hand_full_swap)
 	panel.visible = false
 
 
@@ -210,3 +211,40 @@ func _get_type_icon(type: String) -> String:
 		"free_attachment": return "🔧★"
 		"function_card": return "✨"
 		_: return "?"
+
+
+func _on_spell_hand_full_swap(new_spell: Object, current_hand: Array) -> void:
+	## Player's spell hand is full (all 5 active). Show swap picker.
+	for child in item_container.get_children():
+		child.queue_free()
+	title_label.text = "SPELL HAND FULL — DROP ONE?"
+	panel.visible = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	get_tree().paused = true
+	var player := get_tree().get_first_node_in_group("player")
+	if player:
+		player.process_mode = Node.PROCESS_MODE_ALWAYS
+
+	# Show each current spell as a droppable option + a "Keep All" button
+	for i in current_hand.size():
+		var spell = current_hand[i]
+		if spell == null:
+			continue
+		var btn := Button.new()
+		btn.text = "Drop: %s" % str(spell.card_name)
+		btn.custom_minimum_size = Vector2(160, 50)
+		btn.pressed.connect(func():
+			if _weapon_controller and _weapon_controller.has_method("replace_spell_at_index"):
+				_weapon_controller.replace_spell_at_index(i, new_spell)
+			_close()
+			EventBus.loot_item_selected.emit({"type": "function_card", "data": new_spell})
+		)
+		item_container.add_child(btn)
+
+	var skip_btn := Button.new()
+	skip_btn.text = "Keep All (skip)"
+	skip_btn.pressed.connect(func():
+		_close()
+		EventBus.loot_item_selected.emit({"type": "skipped", "data": null})
+	)
+	item_container.add_child(skip_btn)

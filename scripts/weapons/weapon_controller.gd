@@ -54,6 +54,15 @@ var _magnetize_radius: float = 0.0
 # Shield Wall: a static physics body we spawn in front of player
 var _shield_wall_node: StaticBody3D = null
 
+# Dash immunity tracking
+var _dash_immune: bool = false
+var _dash_immune_timer: float = 0.0
+var _dash_ghost_node: Node3D = null  # Visual ghost during immunity
+
+# Double-tap Shift for Dash shortcut
+var _last_shift_time: float = -1.0
+const DOUBLE_TAP_WINDOW: float = 0.35
+
 var _player: Node3D = null
 
 # All weapon resources
@@ -130,6 +139,14 @@ func _process(delta: float) -> void:
 		else:
 			_pull_enemies_toward_player(delta)
 
+	# ── Dash immunity timer ──
+	if _dash_immune:
+		_dash_immune_timer -= delta
+		if _dash_immune_timer <= 0:
+			_dash_immune = false
+			_clear_dash_ghost()
+			EventBus.dash_immunity_ended.emit()
+
 	if _switch_cooldown > 0:
 		_switch_cooldown -= delta
 
@@ -147,11 +164,30 @@ func _process(delta: float) -> void:
 	elif Input.is_action_just_pressed("weapon_slot_2"):
 		switch_to_slot(1)
 	else:
-		var scroll := Input.get_axis("weapon_prev", "weapon_next")
-		if scroll != 0 and _switch_cooldown <= 0:
+		# Scroll: weapon_next → slot 1, weapon_prev → slot 0 (with 2-weapon system)
+		if Input.is_action_just_pressed("weapon_next") and _switch_cooldown <= 0:
 			var next := (active_slot + 1) % MAX_WEAPONS
 			switch_to_slot(next)
 			_switch_cooldown = 0.15
+		elif Input.is_action_just_pressed("weapon_prev") and _switch_cooldown <= 0:
+			var prev := (active_slot - 1 + MAX_WEAPONS) % MAX_WEAPONS
+			switch_to_slot(prev)
+			_switch_cooldown = 0.15
+
+	# ── Q/E spell cycling ──
+	if Input.is_action_just_pressed("spell_prev"):
+		_cycle_spell(-1)
+	elif Input.is_action_just_pressed("spell_next"):
+		_cycle_spell(1)
+
+	# ── Double-tap Shift: Dash shortcut ──
+	if Input.is_action_just_pressed("sprint"):
+		var now := Time.get_ticks_msec() / 1000.0
+		if now - _last_shift_time <= DOUBLE_TAP_WINDOW:
+			_try_dash_shortcut()
+			_last_shift_time = -1.0  # reset so triple-tap doesn't trigger again
+		else:
+			_last_shift_time = now
 
 	# ── Fire ──
 	if Input.is_action_just_pressed("fire") and can_fire and state == State.IDLE and w:
@@ -201,6 +237,14 @@ func give_weapon(weapon_data: WeaponData, slot: int) -> void:
 
 func get_active_weapon() -> WeaponInstance:
 	return weapons[active_slot]
+
+
+func active_weapon_has_holo_sight() -> bool:
+	var w := get_active_weapon()
+	if not w: return false
+	for att in w.attachments:
+		if att.holo_sight: return true
+	return false
 
 
 # ─── FIRING ───────────────────────────────────────────────────────────────────
@@ -294,11 +338,29 @@ func _process_hit(hit: Dictionary, shoot_dir: Vector3, cam_from: Vector3, w: Wea
 		if _vampiric_active and _player and _player.has_method("heal"):
 			_player.heal(damage * _vampiric_ratio)
 
-		# Piercing
-		if _has_attachment(w, &"Piercing Barrel"):
+		# Piercing — check via bool field, not string name
+		var has_piercing: bool = false
+		for att in w.attachments:
+			if att.piercing:
+				has_piercing = true
+				break
+		if has_piercing:
 			_pierce_check(hit_pos, shoot_dir, damage, w)
+
+		# Split Barrel — fire 2 extra raycasts angled outward from the 5m hit point
+		for att in w.attachments:
+			if att.split_bullet:
+				_split_bullet_check(cam_from, shoot_dir, hit_pos, damage * att.split_damage_fraction, att.split_count - 1, w)
+				break
 	else:
 		var miss_pos := cam_from + shoot_dir * MAX_RAY_DISTANCE
+		# Ricochet Chamber: hit a wall (non-enemy), bounce toward nearest enemy
+		if not hit.is_empty():
+			for att in w.attachments:
+				if att.ricochet:
+					_ricochet_check(hit.position, shoot_dir, damage, w, att.ricochet_range)
+					break
+			miss_pos = hit.position
 		EventBus.hit_missed_new.emit(miss_pos, w)
 
 
@@ -343,6 +405,8 @@ func _apply_mag_spell_on_hit(enemy: Node3D, damage: float, w: WeaponInstance) ->
 			status.apply_burn()
 		if spell_to_use.mag_apply_shock:
 			status.apply_shock()
+			# Shock Magazine: chain 40% damage to 1 nearby enemy within 6m
+			_apply_shock_chain(enemy, damage * 0.4, 6.0, w)
 		if spell_to_use.mag_apply_slow:
 			status.apply_slow()
 		if spell_to_use.mag_explosive:
@@ -359,6 +423,30 @@ func _apply_attachment_effects(enemy: Node3D, hit_pos: Vector3, shoot_dir: Vecto
 			pass  # Handled in _apply_mag_spell_on_hit
 
 
+func _ricochet_check(origin: Vector3, shoot_dir: Vector3, damage: float, w: WeaponInstance, ricochet_range: float) -> void:
+	## After hitting a wall, find the nearest enemy within ricochet_range and fire a secondary ray
+	var nearest_enemy: Node3D = null
+	var nearest_dist := ricochet_range
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy):
+			continue
+		var d: float = enemy.global_position.distance_to(origin)
+		if d < nearest_dist:
+			nearest_dist = d
+			nearest_enemy = enemy
+	if not nearest_enemy:
+		return
+	# Raycast from ricochet point toward nearest enemy
+	var ricochet_dir := (nearest_enemy.global_position - origin).normalized()
+	var space := get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(origin + ricochet_dir * 0.1, origin + ricochet_dir * ricochet_range, 0b0100)
+	var r := space.intersect_ray(q)
+	if r and r.collider.has_method("take_bullet_hit_new"):
+		r.collider.take_bullet_hit_new(damage, w, self)
+		_apply_mag_spell_on_hit(r.collider, damage, w)
+		EventBus.hit_confirmed_new.emit(r.position, w, r.collider)
+
+
 func _pierce_check(from: Vector3, dir: Vector3, damage: float, w: WeaponInstance) -> void:
 	var space := get_world_3d().direct_space_state
 	var query := PhysicsRayQueryParameters3D.create(from + dir * 0.1, from + dir * MAX_RAY_DISTANCE, 0b0100)
@@ -367,6 +455,26 @@ func _pierce_check(from: Vector3, dir: Vector3, damage: float, w: WeaponInstance
 		result.collider.take_bullet_hit_new(damage, w, self)
 		_apply_mag_spell_on_hit(result.collider, damage, w)
 		EventBus.hit_confirmed_new.emit(result.position, w, result.collider)
+
+
+func _split_bullet_check(cam_from: Vector3, original_dir: Vector3, split_origin: Vector3, split_damage: float, extra_count: int, w: WeaponInstance) -> void:
+	## After 5m of travel, bullet splits into extra_count+1 total projectiles (fan out)
+	var cam := get_viewport().get_camera_3d()
+	if not cam:
+		return
+	var right := cam.global_transform.basis.x
+	var spread_angles: Array[float] = []
+	for i in extra_count:
+		var angle := deg_to_rad(5.0 + i * 5.0)
+		spread_angles.append(angle)
+		spread_angles.append(-angle)
+	for angle in spread_angles:
+		var split_dir := original_dir.rotated(right, angle).normalized()
+		var result := _raycast(split_origin + split_dir * 0.1, split_dir)
+		if not result.is_empty() and result.collider.has_method("take_bullet_hit_new"):
+			result.collider.take_bullet_hit_new(split_damage, w, self)
+			_apply_mag_spell_on_hit(result.collider, split_damage, w)
+			EventBus.hit_confirmed_new.emit(result.position, w, result.collider)
 
 
 func _apply_chain(source: Node3D, chain_damage: float, chain_range: float, w: WeaponInstance) -> void:
@@ -378,6 +486,11 @@ func _apply_chain(source: Node3D, chain_damage: float, chain_range: float, w: We
 				enemy.take_bullet_hit_new(chain_damage, w, self)
 				_apply_mag_spell_on_hit(enemy, chain_damage, w)
 			break  # chain to 1 closest
+
+
+func _apply_shock_chain(source: Node3D, chain_damage: float, chain_range: float, w: WeaponInstance) -> void:
+	## Shock Magazine: chain to nearest enemy for 40% damage, apply mag spell to chain target too
+	_apply_chain(source, chain_damage, chain_range, w)
 
 
 func _spawn_explosion(pos: Vector3, damage: float, radius: float, w: WeaponInstance) -> void:
@@ -481,8 +594,41 @@ func _execute_spell(spell: FunctionCardData) -> void:
 	elif spell.is_magnetize: _cast_magnetize(spell)
 
 
+func _cycle_spell(direction: int) -> void:
+	## Q cycles left (-1), E cycles right (+1)
+	if spell_hand.is_empty():
+		return
+	var start := active_spell_index if active_spell_index >= 0 else 0
+	var idx := start
+	for _i in spell_hand.size():
+		idx = (idx + direction + spell_hand.size()) % spell_hand.size()
+		if spell_hand[idx] != null and not spell_consumed[idx]:
+			active_spell_index = idx
+			_emit_spell_state()
+			return
+	# All consumed — still move the visual cursor
+	idx = (start + direction + spell_hand.size()) % spell_hand.size()
+	active_spell_index = idx
+	_emit_spell_state()
+
+
+func _try_dash_shortcut() -> void:
+	## Double-tap Shift fires Dash from anywhere in the spell hand without selecting it
+	for i in spell_hand.size():
+		if spell_hand[i] != null and not spell_consumed[i] and spell_hand[i].is_dash:
+			spell_consumed[i] = true
+			# Don't change active_spell_index — keep current selection
+			# But do advance if i was the active index
+			if active_spell_index == i:
+				active_spell_index = _find_next_spell(i + 1)
+			_emit_spell_state()
+			EventBus.spell_cast_new.emit(spell_hand[i])
+			_execute_spell(spell_hand[i])
+			return
+
+
 func add_spell_to_hand(spell: FunctionCardData) -> void:
-	## Add new spell; if full, caller should offer slot swap first
+	## Add new spell; if full and all unconsumed, request swap from UI.
 	for i in spell_hand.size():
 		if spell_hand[i] == null or spell_consumed[i]:
 			spell_hand[i] = spell
@@ -491,15 +637,8 @@ func add_spell_to_hand(spell: FunctionCardData) -> void:
 				active_spell_index = i
 			_emit_spell_state()
 			return
-	# Hand full — replace last consumed slot
-	for i in range(spell_hand.size() - 1, -1, -1):
-		if spell_consumed[i]:
-			spell_hand[i] = spell
-			spell_consumed[i] = false
-			if active_spell_index < 0:
-				active_spell_index = i
-			_emit_spell_state()
-			return
+	# All 5 occupied and unconsumed — request UI swap
+	EventBus.spell_hand_full_swap_requested.emit(spell, spell_hand.duplicate())
 
 
 # ─── MAGAZINE SPELL IMPLEMENTATIONS ──────────────────────────────────────────
@@ -528,16 +667,39 @@ func _cast_magazine_spell(spell: FunctionCardData) -> void:
 
 func _cast_dash(spell: FunctionCardData) -> void:
 	if not _player: return
-	var move_dir := Vector3.ZERO
-	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	if input.length() > 0.1:
-		move_dir = (_player.global_transform.basis * Vector3(input.x, 0, input.y)).normalized()
+
+	# Direction: WASD input direction, not look direction. If no input: forward.
+	var input_2d := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var move_dir: Vector3
+	if input_2d.length() > 0.1:
+		move_dir = (_player.global_transform.basis * Vector3(input_2d.x, 0, input_2d.y)).normalized()
 	else:
-		move_dir = -_player.global_transform.basis.z  # forward
-	_player.global_position += move_dir * spell.dash_distance
-	var wm := get_tree().get_first_node_in_group("wave_manager")
-	if wm and wm.has_method("set_temporary_grace"):
-		wm.set_temporary_grace(spell.dash_iframes)
+		move_dir = -_player.global_transform.basis.z
+
+	var dash_dist := spell.dash_distance  # 3m per spec
+	var target_pos := _player.global_position + move_dir * dash_dist
+
+	# Collision check: stop at wall using motion cast
+	var space := get_world_3d().direct_space_state
+	var query := PhysicsShapeQueryParameters3D.new()
+	var capsule := CapsuleShape3D.new()
+	capsule.radius = 0.28
+	capsule.height = 1.6
+	query.shape = capsule
+	query.motion = move_dir * dash_dist
+	query.transform = Transform3D(Basis.IDENTITY, _player.global_position + Vector3.UP * 0.9)
+	query.collision_mask = 0b0001  # environment only
+	var motion_result := space.cast_motion(query)
+	if motion_result.size() >= 1 and motion_result[0] < 1.0:
+		target_pos = _player.global_position + move_dir * dash_dist * motion_result[0]
+
+	_player.global_position = target_pos
+
+	# 2s immunity window — track in this controller, not wave manager
+	_dash_immune = true
+	_dash_immune_timer = spell.dash_iframes  # 2.0 per spec
+	EventBus.dash_immunity_started.emit()
+	_spawn_dash_ghost()
 
 
 func _cast_blink(spell: FunctionCardData) -> void:
@@ -557,8 +719,10 @@ func _cast_shield_wall(spell: FunctionCardData) -> void:
 	if _shield_wall_node and is_instance_valid(_shield_wall_node):
 		_shield_wall_node.queue_free()
 	# Spawn a static wall 2m in front of player
+	# Layer 8 = shield_wall (does NOT intersect player raycast mask 0b0101=env+enemy)
+	# Enemy projectiles must be on layer that hits layer 8 to be blocked
 	var wall := StaticBody3D.new()
-	wall.collision_layer = 1
+	wall.collision_layer = 0b10000000  # layer 8
 	wall.collision_mask = 0
 	var col := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -617,10 +781,8 @@ func _cast_time_warp(spell: FunctionCardData) -> void:
 	_time_warp_active = true
 	_time_warp_timer = spell.time_warp_duration
 	_set_enemy_time_warp(spell.time_warp_speed_fraction)
-	get_tree().create_timer(spell.time_warp_duration).timeout.connect(func():
-		_time_warp_active = false
-		_set_enemy_time_warp(1.0)
-	)
+	# Cleanup is handled solely in _process when _time_warp_timer reaches 0
+	# No duplicate create_timer here
 
 
 func _set_enemy_time_warp(speed_scale: float) -> void:
@@ -662,6 +824,9 @@ func _cast_detonator(spell: FunctionCardData) -> void:
 	enemy.take_damage(bonus)
 	EventBus.enemy_poison_detonated.emit(enemy, stacks, bonus, has_burn)
 	EventBus.spell_detonator_hit.emit(enemy, bonus, has_burn)
+	# Toxic Fire combo popup
+	if has_burn:
+		EventBus.combo_triggered.emit("TOXIC FIRE", enemy.global_position)
 
 
 func _cast_chain_detonation(spell: FunctionCardData) -> void:
@@ -799,7 +964,10 @@ func is_reloading() -> bool:
 
 
 func absorb_damage(amount: float) -> float:
-	## Iron Skin: absorb hits regardless of damage
+	## Dash 2s immunity: negate all damage
+	if _dash_immune:
+		return 0.0
+	## Iron Skin: absorb next 3 hits
 	if _iron_skin_hits_remaining > 0:
 		_iron_skin_hits_remaining -= 1
 		if _iron_skin_hits_remaining <= 0:
@@ -809,6 +977,14 @@ func absorb_damage(amount: float) -> float:
 	return amount
 
 
+func _spawn_dash_ghost() -> void:
+	EventBus.dash_ghost_start.emit()
+
+
+func _clear_dash_ghost() -> void:
+	EventBus.dash_ghost_end.emit()
+
+
 # ─── ATTACHMENT MANAGEMENT ────────────────────────────────────────────────────
 
 func add_attachment_to_slot(att: AttachmentData, slot: int) -> void:
@@ -816,6 +992,17 @@ func add_attachment_to_slot(att: AttachmentData, slot: int) -> void:
 	weapons[slot].add_attachment(att)
 	_update_fire_timer()
 	_emit_weapon_state()
+
+
+func replace_spell_at_index(index: int, new_spell: FunctionCardData) -> void:
+	## Drop the spell at index and insert new_spell there
+	if index < 0 or index >= spell_hand.size():
+		return
+	spell_hand[index] = new_spell
+	spell_consumed[index] = false
+	if active_spell_index < 0 or spell_consumed[active_spell_index]:
+		active_spell_index = _find_next_spell(0)
+	_emit_spell_state()
 
 
 # ─── TIMER / MODEL HELPERS ────────────────────────────────────────────────────

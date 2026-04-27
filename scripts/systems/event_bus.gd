@@ -39,6 +39,13 @@ signal iron_skin_activated(hits_remaining: int)
 signal iron_skin_depleted()
 ## Status combo triggers (for UI popups)
 signal combo_triggered(combo_name: String, position: Vector3)
+## Spell hand swap request (all 5 active, new spell offered)
+signal spell_hand_full_swap_requested(new_spell: Object, current_hand: Array)
+## Dash immunity
+signal dash_immunity_started()
+signal dash_immunity_ended()
+signal dash_ghost_start()
+signal dash_ghost_end()
 
 # ─── Buff signals (old system compat) ────────────────────────────────────────
 signal buff_war_cry_activated(multiplier: float)

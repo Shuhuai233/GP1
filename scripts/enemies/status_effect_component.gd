@@ -153,13 +153,13 @@ func apply_freeze(duration: float = 3.0) -> void:
 	is_frozen = true
 	freeze_timer = duration
 	freeze_changed.emit(true)
-	# Also stun the parent
 	var parent := get_parent()
 	if parent and parent.has_method("apply_stun"):
 		parent.apply_stun(duration)
-	# Brittle: frozen + any damage = 2x
-	combo_activated.emit("BRITTLE")
-	EventBus.combo_triggered.emit("BRITTLE", parent.global_position)
+	# Brittle combo announcement happens on the NEXT hit while frozen, not here.
+	# See get_damage_multiplier() — 2x applied per damage call.
+	# We do emit a "now_brittle" signal so the enemy UI can show BRITTLE label.
+	combo_activated.emit("NOW_BRITTLE")
 
 
 func detonate_poison() -> int:

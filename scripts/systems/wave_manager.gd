@@ -280,13 +280,12 @@ func is_grace_period() -> bool:
 
 
 func set_temporary_grace(duration: float) -> void:
-	## Used by Phase Dash for brief invincibility during dash
+	## Wave-transition grace (called from weapon_controller for Quick Grip)
 	_grace_active = true
 	get_tree().create_timer(duration).timeout.connect(func():
-		# Only clear if not in a wave-transition grace period
-		if not _grace_active:
-			return
-		_grace_active = false
+		# Only clear if still in a temporary grace (not a wave-transition grace)
+		if _grace_active:
+			_grace_active = false
 	)
 
 

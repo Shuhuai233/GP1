@@ -119,6 +119,8 @@ func _ready() -> void:
 	EventBus.loot_offering_started.connect(func(_i): is_selecting_card = true)
 	EventBus.loot_item_selected.connect(func(_i): is_selecting_card = false)
 	EventBus.player_speed_changed.connect(_on_speed_changed)
+	EventBus.dash_ghost_start.connect(_on_dash_ghost_start)
+	EventBus.dash_ghost_end.connect(_on_dash_ghost_end)
 
 
 var _external_speed_multiplier: float = 1.0
@@ -129,6 +131,19 @@ func _on_speed_changed(multiplier: float) -> void:
 
 func _on_enemy_killed(_enemy: Node3D) -> void:
 	heal(heal_on_kill)
+
+
+func _on_dash_ghost_start() -> void:
+	# Semi-transparent shimmer: apply modulate to ScreenEffects to signal immunity
+	if damage_overlay and damage_overlay.material:
+		damage_overlay.material.set_shader_parameter("color", Color(0.5, 0.8, 1.0, 1.0))
+		damage_overlay.material.set_shader_parameter("intensity", 0.15)
+
+
+func _on_dash_ghost_end() -> void:
+	if damage_overlay and damage_overlay.material:
+		damage_overlay.material.set_shader_parameter("intensity", 0.0)
+		damage_overlay.material.set_shader_parameter("color", Color(1.0, 0.0, 0.0, 1.0))
 
 
 func _input(event: InputEvent) -> void:
@@ -266,7 +281,12 @@ func _physics_process(delta: float) -> void:
 
 	# --- ADS FOV ---
 	var target_fov := ads_fov if is_ads else default_fov
-	camera.fov = move_toward(camera.fov, target_fov, (default_fov - ads_fov) * ads_transition_speed * delta)
+	# Holo Sight: instant ADS transition
+	var has_holo: bool = weapon != null and weapon.has_method("active_weapon_has_holo_sight") and weapon.active_weapon_has_holo_sight()
+	if has_holo:
+		camera.fov = target_fov
+	else:
+		camera.fov = move_toward(camera.fov, target_fov, (default_fov - ads_fov) * ads_transition_speed * delta)
 
 
 func _update_camera_effects(delta: float, input_dir: Vector2) -> void:

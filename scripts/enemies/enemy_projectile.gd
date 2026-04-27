@@ -38,7 +38,7 @@ func _ready() -> void:
 	add_child(col)
 
 	collision_layer = 0
-	collision_mask = 0b0011  # environment + player
+	collision_mask = 0b10000011  # environment + player + shield_wall (layer 8)
 
 	body_entered.connect(_on_body_entered)
 

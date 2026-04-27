@@ -111,8 +111,12 @@ func take_bullet_hit_new(damage: float, weapon_instance: Object, controller: Nod
 	if is_dead:
 		return
 
-	# Apply status multipliers (Burn, Mark, Brittle)
+	# Brittle: emit popup the first time a frozen enemy is actually hit
+	var was_frozen := status and status.is_frozen
 	damage *= status.get_damage_multiplier()
+
+	if was_frozen:
+		EventBus.combo_triggered.emit("BRITTLE", global_position)
 
 	take_damage(damage)
 	_flash_hit()
