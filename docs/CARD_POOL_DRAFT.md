@@ -1,6 +1,7 @@
-# GP1 — Card Pool v2
+# GP1 — Card Pool v2 (SUPERSEDED)
 
-*30+ cards organized by PLAYSTYLE, not just status type.*
+**⚠️ THIS DOCUMENT IS OUTDATED. The 40-card firing system has been replaced.**
+**⚠️ See `docs/WEAPONS_AND_CARDS.md` for the current weapon + attachment + function card system.**
 *Each playstyle has its own firing cards AND function cards that work together.*
 *Cards CAN cross playstyles — that's where discovery happens.*
 

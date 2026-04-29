@@ -1,6 +1,7 @@
-# GP1 — Card Reference (40 Cards)
+# GP1 — Card Reference (40 Cards) (SUPERSEDED)
 
-*Complete list of all cards with stats and design intentions.*
+**⚠️ THIS DOCUMENT IS OUTDATED. The 40-card firing system has been replaced.**
+**⚠️ See `docs/WEAPONS_AND_CARDS.md` for the current weapon + attachment + function card system.**
 
 ---
 

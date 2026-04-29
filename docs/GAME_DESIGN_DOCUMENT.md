@@ -1,6 +1,6 @@
 # GP1 — Game Design Document
 ### Version: 2026-04-25 (post two-hand system)
-### Status: Single source of truth. All other docs are history/context.
+### ⚠️ PARTIALLY OUTDATED: Sections 1-4 and 9 still describe the old card-pack system. See `docs/WEAPONS_AND_CARDS.md` for the current weapon + attachment + function card system. Sections 6-8, 10-14 are still current.
 
 ---
 

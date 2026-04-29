@@ -1,6 +1,6 @@
-# Design Branch: Weapon + Function Card System
+# Design Branch: Weapon + Function Card System (SUPERSEDED)
 
-*This is a design exploration. NOT yet committed to the GDD.*
+**⚠️ This was an exploration document. The final version is `docs/WEAPONS_AND_CARDS.md`.**
 *Purpose: flesh out the weapon-as-collectible + function-as-ability system before deciding.*
 
 ---
