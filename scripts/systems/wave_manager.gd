@@ -197,11 +197,9 @@ func _wave_cleared() -> void:
 
 
 func _begin_between_wave_flow() -> void:
-	# Step 1: "WAVE X CLEARED" (3 sec) — main.gd shows it
-	await get_tree().create_timer(3.0).timeout
-	# Step 2: Breathing room (3 sec)
-	await get_tree().create_timer(3.0).timeout
-	# Step 3: Loot offering (new system)
+	# Brief pause after wave cleared banner, then straight to loot
+	await get_tree().create_timer(2.0).timeout
+	# Loot offering (new system)
 	_offer_loot()
 
 

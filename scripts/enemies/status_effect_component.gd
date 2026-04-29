@@ -52,8 +52,10 @@ const MARKED_FOR_DEATH_BONUS: float = 0.50  # +50% when Mark + Burn active
 
 
 func _ready() -> void:
-	burn_particles.emitting = false
-	poison_glow.visible = false
+	if burn_particles:
+		burn_particles.emitting = false
+	if poison_glow:
+		poison_glow.visible = false
 
 
 func _process(delta: float) -> void:
@@ -61,7 +63,8 @@ func _process(delta: float) -> void:
 		burn_timer -= delta
 		if burn_timer <= 0.0:
 			is_burning = false
-			burn_particles.emitting = false
+			if burn_particles:
+				burn_particles.emitting = false
 			burn_changed.emit(false)
 
 	if is_shocked:
@@ -104,7 +107,8 @@ func apply_burn() -> void:
 	burn_timer = BURN_DURATION
 	if not is_burning:
 		is_burning = true
-		burn_particles.emitting = true
+		if burn_particles:
+			burn_particles.emitting = true
 	burn_changed.emit(true)
 	# Marked for Death: Mark + Burn → +50%
 	if is_marked:
@@ -180,7 +184,8 @@ func clear_all() -> void:
 	poison_changed.emit(0)
 	if is_burning:
 		is_burning = false
-		burn_particles.emitting = false
+		if burn_particles:
+			burn_particles.emitting = false
 		burn_changed.emit(false)
 	if is_shocked:
 		is_shocked = false
@@ -235,6 +240,8 @@ func get_slow_fraction() -> float:
 
 
 func _update_poison_glow() -> void:
+	if not poison_glow:
+		return
 	if poison_stacks > 0:
 		poison_glow.visible = true
 		poison_glow.light_energy = clampf(float(poison_stacks) * 0.3, 0.5, 4.0)

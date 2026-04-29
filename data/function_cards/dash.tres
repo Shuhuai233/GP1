@@ -4,8 +4,8 @@
 script = ExtResource("1")
 card_name = &"Dash"
 category = 1
-description = "Dash 5m in movement direction. 0.2s invincible."
+description = "Dash 3m in movement direction. 2s invincible."
 color = Color(0.8, 0.8, 0.8, 1)
 is_dash = true
-dash_distance = 5.0
-dash_iframes = 0.2
+dash_distance = 3.0
+dash_iframes = 2.0

@@ -215,6 +215,7 @@ func _get_type_icon(type: String) -> String:
 
 func _on_spell_hand_full_swap(new_spell: Object, current_hand: Array) -> void:
 	## Player's spell hand is full (all 5 active). Show swap picker.
+	_close()  # Close existing loot panel to avoid double-pause
 	for child in item_container.get_children():
 		child.queue_free()
 	title_label.text = "SPELL HAND FULL — DROP ONE?"

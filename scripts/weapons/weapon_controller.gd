@@ -100,7 +100,7 @@ func _ready() -> void:
 	fire_timer.timeout.connect(_on_fire_timeout)
 	reload_timer.timeout.connect(_on_reload_finished)
 
-	_player = get_parent().get_parent().get_parent()
+	_player = get_tree().get_first_node_in_group("player")
 	_update_fire_timer()
 	_emit_weapon_state()
 
@@ -272,7 +272,12 @@ func _fire() -> void:
 		_process_hit(hit_result, shoot_dir, cam_from, w)
 
 	# Consume bullet (Double Feed: 2 per shot)
-	var bullets_to_consume := 2 if w.has_attachment(&"Double Feed") else 1
+	var has_double_feed := false
+	for att in w.attachments:
+		if att.double_feed:
+			has_double_feed = true
+			break
+	var bullets_to_consume := 2 if has_double_feed else 1
 	w.consume_bullet(bullets_to_consume)
 
 	# Machine Pistol speed bonus
@@ -315,7 +320,7 @@ func _raycast(from: Vector3, direction: Vector3) -> Dictionary:
 func _process_hit(hit: Dictionary, shoot_dir: Vector3, cam_from: Vector3, w: WeaponInstance) -> void:
 	var damage := _calc_damage(w)
 
-	if not hit.is_empty() and hit.collider.has_method("take_bullet_hit"):
+	if not hit.is_empty() and hit.collider.has_method("take_bullet_hit_new"):
 		var collider = hit.collider
 		var hit_pos: Vector3 = hit.position
 

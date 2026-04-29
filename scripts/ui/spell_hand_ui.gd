@@ -9,6 +9,8 @@ extends CanvasLayer
 
 const SLOT_COUNT: int = 5
 
+var _mag_spell_label: Label = null
+
 
 func _ready() -> void:
 	EventBus.spell_hand_state_changed.connect(_on_spell_hand_state_changed)
@@ -16,6 +18,7 @@ func _ready() -> void:
 	EventBus.mag_spell_activated.connect(_on_mag_spell_activated)
 	EventBus.combo_triggered.connect(_on_combo_triggered)
 	EventBus.spell_cast_new.connect(_on_spell_cast)
+	EventBus.weapon_reload_finished.connect(_on_reload_finished)
 
 	if toxic_fire_label:
 		toxic_fire_label.modulate.a = 0.0
@@ -122,9 +125,37 @@ func _on_spell_cast(card: Object) -> void:
 	pass  # visual update comes via spell_hand_state_changed
 
 
+func _on_reload_finished() -> void:
+	# Reload clears the active magazine spell — remove the indicator
+	if _mag_spell_label:
+		_mag_spell_label.visible = false
+
+
 func _on_mag_spell_activated(spell: Object, _weapon: Object) -> void:
-	# Flash the active weapon slot area briefly with spell color
-	pass
+	# Tint every unconsumed spell slot's border with the mag spell color + persistent glow
+	if not spell or not spell.get("color"):
+		return
+	var mag_color: Color = spell.color
+	for i in slots.size():
+		var panel: PanelContainer = slots[i]
+		var style := panel.get_theme_stylebox("panel") as StyleBoxFlat
+		if not style:
+			continue
+		# Add a colored inner glow by tinting the background toward the mag spell color
+		style.border_color = mag_color
+		style.border_color.a = 1.0
+		style.bg_color = Color(mag_color.r * 0.15, mag_color.g * 0.15, mag_color.b * 0.15, 0.95)
+	# Show a persistent label indicating active mag spell
+	if _mag_spell_label == null:
+		_mag_spell_label = Label.new()
+		_mag_spell_label.name = "MagSpellLabel"
+		_mag_spell_label.add_theme_font_size_override("font_size", 11)
+		_mag_spell_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_mag_spell_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		slot_container.add_child(_mag_spell_label)
+	_mag_spell_label.text = "MAG: %s" % str(spell.card_name) if spell.get("card_name") else "MAG ACTIVE"
+	_mag_spell_label.add_theme_color_override("font_color", mag_color)
+	_mag_spell_label.visible = true
 
 
 func _on_combo_triggered(combo_name: String, _pos: Vector3) -> void:
