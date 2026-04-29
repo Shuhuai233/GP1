@@ -36,16 +36,22 @@ Player carries 2 weapons. Switch with scroll wheel or 1/2 keys. Each weapon is a
 | Stat | Value |
 |---|---|
 | Fire rate | ~6 shots/sec |
+| Fire mode | Full-auto (hold to fire) |
 | Magazine | 40 rounds |
 | Damage | 6 per bullet |
 | Reload | 2.5 sec |
+| Hip-fire spread | 1.5 degrees |
+| ADS spread | 0 (perfect accuracy) |
+| Recoil | Moderate vertical + slight horizontal drift. Must control. |
 | Attachment slots | Unlimited |
 
-**Identity:** The all-rounder. Reliable, versatile, boring alone — but becomes a monster with the right attachments and magazine spells. The weapon for players who want flexibility.
+**Identity:** The all-rounder. Reliable, versatile, boring alone — but becomes a monster with the right attachments and magazine spells. Tight spread makes it effective at medium-long range. Controllable recoil rewards burst-firing.
 
 **Why it exists:** Mid-tier fire rate + mid-tier damage means it works with every magazine spell and every attachment. It's the "platform" weapon — its purpose is to be modified. An unmodded AR is mediocre. A modded AR with Split Barrel + Poison Magazine is a stacking machine.
 
-**Best with:** Attachments that multiply its moderate fire rate (Split Barrel turns 6/sec into 18 projectiles/sec). Magazine spells that benefit from sustained fire.
+**Feels like:** Call of Duty M4. Controllable, accurate, versatile.
+
+**Best with:** Attachments that multiply its moderate fire rate (Split Barrel turns 6/sec into 18 projectiles/sec). ADS-focused play at medium range.
 
 **Worst with:** Nothing — that's the point. It's never the best, never the worst.
 
@@ -56,16 +62,22 @@ Player carries 2 weapons. Switch with scroll wheel or 1/2 keys. Each weapon is a
 | Stat | Value |
 |---|---|
 | Fire rate | ~10 shots/sec |
+| Fire mode | Full-auto (hold to fire) |
 | Magazine | 60 rounds |
 | Damage | 3 per bullet |
 | Reload | 1.5 sec |
+| Hip-fire spread | 4 degrees (wide, chaotic) |
+| ADS spread | 2 degrees (tighter but still spraying) |
+| Recoil | High random spread. NOT controllable — intentionally wild. |
 | Attachment slots | Unlimited |
 
-**Identity:** The bullet hose. Spray and pray. Low damage per bullet but sheer volume overwhelms. The weapon for players who like holding the trigger and watching numbers fly.
+**Identity:** The bullet hose. Spray and pray. Wide spread means it's a CLOSE RANGE weapon — at 20m most bullets miss. But up close, the volume overwhelms. Low damage per bullet, massive volume.
 
-**Why it exists:** Maximum status application speed. Poison Magazine on SMG = 10 stacks per second (10 shots × 2 stacks per hit, but actually every bullet hit at 10/sec). Also burns through magazine spells fastest — cast Poison Magazine on full SMG mag, that's 60 poison bullets. Cast on half-empty, still 30. The SMG is the "spell amplifier" weapon.
+**Why it exists:** Maximum status application speed. Poison Magazine on SMG = 20 stacks per second. Also burns through magazine spells fastest — cast Poison Magazine on full SMG mag, that's 60 poison bullets. The SMG is the "spell amplifier" weapon.
 
-**Best with:** Any magazine spell. Shock Magazine = 10 chain procs per second. Frost Magazine = enemies are permanently slowed. Explosive Magazine = carpet bombing at 10 explosions per second.
+**Feels like:** Apex Legends R-99. Wild, close-range, melts up close, useless at distance.
+
+**How it's different from AR:** AR is accurate at range, controllable, rewards ADS. SMG is chaotic, close-range, rewards hip-fire aggression. AR players aim carefully. SMG players get in your face.
 
 **Worst with:** Situations requiring precision or single-target burst. Each bullet does 3 damage — killing a Big Eye (100 HP) takes 34 bullets minimum without status effects.
 
@@ -329,7 +341,7 @@ Found between waves alongside weapons and attachments. All from the same pick-1-
 - Visual: player model shimmers/ghosts with transparency to communicate "I'm immune"
 - Audio: subtle "whoosh" on dash, sustained low hum during immunity
 - Immunity does NOT make player intangible to geometry — only to damage
-- Immunity ends after exactly 2 seconds OR on next reload (whichever comes first)
+- Immunity ends after exactly 2 seconds. Reload does NOT cancel immunity.
 
 **Visual feedback:**
 - Dash trail: light gray streak along dash path, fades over 0.3s
@@ -425,6 +437,8 @@ Between each wave, offer 3 items. Types:
 | Attachment for free | Apply to either weapon, no swap needed | Rare (~10%) |
 
 ### Rules
+- **All 3 offered items must be DIFFERENT from each other** (no duplicates in a single offering)
+- **Attachments already owned are never offered again** (unique per run)
 - Offer always contains at least 1 function card
 - Weapons appear in offerings from wave 1 (player needs a 2nd gun early)
 - Attachments appear from wave 2 onwards

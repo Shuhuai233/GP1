@@ -15,15 +15,18 @@ What remains: 2 blockers, 3 major bugs, presentation (models, audio, crosshair),
 
 ## BLOCKERS (must fix)
 
-### 1. All weapons are semi-auto — SMG/AR/Machine Pistol unplayable
+### 1. AR and SMG must be full-auto (hold to fire) but feel DIFFERENT
 File: weapon_controller.gd:193
-Problem: uses is_action_just_pressed("fire") — requires click per shot
-Fix: change to is_action_pressed("fire"). fire_timer already gates rate.
+Problem: uses is_action_just_pressed("fire") — all weapons are semi-auto
+Fix: Change to is_action_pressed("fire") for full-auto weapons. Revolver and Sniper stay semi-auto (just_pressed).
+AR vs SMG differentiation (per WEAPONS_AND_CARDS.md):
+- AR: 6/sec, hip spread 1.5 deg, ADS spread 0, moderate controllable recoil. Accurate at range. Feels like COD M4.
+- SMG: 10/sec, hip spread 4 deg, ADS spread 2 deg, high random uncontrollable recoil. Close range only. Feels like Apex R-99.
+The fire mode and spread/recoil differences make them feel completely different even though both are full-auto hold-to-fire.
 
-### 2. Reload does NOT end Dash immunity
+### 2. Reload does NOT need to end Dash immunity — DESIGN CHANGED
 File: weapon_controller.gd:946-956
-Problem: design says immunity ends on reload. Code doesn't clear it.
-Fix: add dash immunity clear in _on_reload_finished()
+UPDATED: Dash immunity = exactly 2 seconds, period. Reload does NOT cancel it. No code change needed if reload already ignores dash state. If code currently clears dash on reload, REMOVE that logic.
 
 ## MAJOR BUGS (should fix)
 
